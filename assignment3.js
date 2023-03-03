@@ -20,9 +20,9 @@ export class Project extends Scene {
 			engine: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())(polyres/2, polyres/2),
 			disc_low_poly: new defs.Regular_2D_Polygon(polyres/2, polyres/2),
 			disc: new defs.Regular_2D_Polygon(3*polyres, 3*polyres),
-			mountain: new defs.Cone_Tip(2*polyres, 2*polyres),
+			mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres/4, polyres/4),
 			leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres/4, polyres/4),
-			trunk: new defs.Cylindrical_Tube(polyres, polyres),
+			trunk: new defs.Cylindrical_Tube(polyres/6, polyres/6),
         };
 
         // *** Materials
@@ -41,12 +41,41 @@ export class Project extends Scene {
                 {ambient: 1.0, diffusivity: .5, color: hex_color("#ffffff")}),
         }
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+
+		this.randomList = [];
+		for (let i = 0; i < 750; i++) {
+  			let randomInt = Math.floor(Math.random() * 51) - 25; // generate a random integer between -25 and 25
+  			this.randomList.push(randomInt); 
+		}
+		this.noisySineList = [];
+		for (let i = 0; i < 20; i++) {
+			let randomInt = this.generateNoisySineWave(1, 1, 0.1);
+			this.noisySineList.push(randomInt); 
+		}
     }
+
+	generateNoisySineWave(frequency, amplitude, noiseFactor) {
+		let numPoints = 100;
+		let points = [];
+	
+		for (let i = 0; i < numPoints; i++) {
+		let x = i / numPoints;
+		let y = amplitude * Math.sin(2 * Math.PI * frequency * x);
+	
+		let noiseValue = (Math.random() - 0.5) * 2 * noiseFactor;
+	
+		let noisyValue = Math.ceil(10*(y + noiseValue));
+	
+		points.push([x, noisyValue]);
+		}
+		return points;
+	}
+  
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        // this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => this.sun);
-        // this.new_line();
+        this.key_triggered_button("Move", ["w"], () => this.attached = () => this.move);
+        this.new_line();
         // this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
         // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
         // this.new_line();
@@ -57,9 +86,25 @@ export class Project extends Scene {
     }
 
     draw_wheel(context, program_state, model_transform, t) {
-        model_transform = model_transform.times(Mat4.scale(0.5, 0.5, 0.25));
+        model_transform = model_transform.times(Mat4.scale(0.5, 0.5, 0.25))
+										 .times(Mat4.rotation(t/1.5, 0, 0, 1));
     	this.shapes.wheel.draw(context, program_state, model_transform, this.materials.pink);
     	this.shapes.disc.draw(context, program_state, model_transform, this.materials.pink);
+		let base = model_transform;
+		model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
+		this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.rotation(Math.PI/2, 0, 0, 1));
+		model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
+		this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.rotation(Math.PI/4, 0, 0, 1));
+		model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
+		this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.rotation(Math.PI/2, 0, 0, 1));
+		model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
+		this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
     }
 
     draw_box(context, program_state, model_transform, t) {
@@ -73,13 +118,13 @@ export class Project extends Scene {
 		this.draw_box(context, program_state, model_transform, t);
 		
 		model_transform = base;
-		model_transform = model_transform.times(Mat4.translation(0, -1.5, -0.75));
+		model_transform = model_transform.times(Mat4.translation(0, -1.5, -0.76));
 		this.draw_wheel(context, program_state, model_transform, t);
-		model_transform = model_transform.times(Mat4.translation(0, 0, 1.5));
+		model_transform = model_transform.times(Mat4.translation(0, 0, 1.52));
 		this.draw_wheel(context, program_state, model_transform, t);
 		model_transform = model_transform.times(Mat4.translation(spacing, 0, 0));
 		this.draw_wheel(context, program_state, model_transform, t);
-		model_transform = model_transform.times(Mat4.translation(0, 0, -1.5));
+		model_transform = model_transform.times(Mat4.translation(0, 0, -1.52));
 		this.draw_wheel(context, program_state, model_transform, t);
 	}
 
@@ -193,7 +238,7 @@ export class Project extends Scene {
 	}
 
 	draw_train(context, program_state, model_transform, t) {
-		model_transform = model_transform.times(Mat4.translation(0, -3, 0));
+		model_transform = model_transform.times(Mat4.translation(-1.1*t, -3, 0));
 		this.draw_locomotive(context, program_state, model_transform, t);
 		for(let i = 0; i < 5; i++) {
 			model_transform = model_transform.times(Mat4.translation(8.8, 0, 0));			
@@ -222,16 +267,33 @@ export class Project extends Scene {
 	}
 
 	draw_trees(context, program_state, model_transform, t) {
-		model_transform = model_transform.times(Mat4.translation(0, 0, -10));
-		this.draw_tree_big(context, program_state, model_transform, t);
-		model_transform = model_transform.times(Mat4.translation(5, 0, 0));
-		this.draw_tree_small(context, program_state, model_transform, t);
+		let base = model_transform;
+		for(let i = 0; i < this.randomList.length - 2; i += 2) {
+			model_transform = base;
+			model_transform = model_transform.times(Mat4.translation(5*this.randomList[i], 0, 2*(this.randomList[i+1] - 29)));
+			if(i % 4 == 0) {
+				this.draw_tree_small(context, program_state, model_transform, t);
+			}
+			else {
+				this.draw_tree_big(context, program_state, model_transform, t);
+			}
+		}
+		for(let i = 1; i < this.randomList.length - 2; i += 2) {
+			model_transform = base;
+			model_transform = model_transform.times(Mat4.translation(-5*this.randomList[i], 0, -2*(this.randomList[i+1] - 29)));
+			if(i % 4 == 0) {
+				this.draw_tree_small(context, program_state, model_transform, t);
+			}
+			else {
+				this.draw_tree_big(context, program_state, model_transform, t);
+			}
+		}
 	}
 
-	draw_mountain(context, program_state, model_transform, t) {
-		model_transform = model_transform.times(Mat4.translation(0, 0, -25))
+	draw_mountain(context, program_state, model_transform, t, h=0) {
+		model_transform = model_transform.times(Mat4.translation(0, h, 0))
 										 .times(Mat4.rotation(-Math.PI/2, 1, 0, 0))
-										 .times(Mat4.scale(15, 15, 10));
+										 .times(Mat4.scale(40, 40, 30));
 		this.shapes.mountain.draw(context, program_state, model_transform, this.materials.purple);
 		model_transform = model_transform.times(Mat4.translation(0, 0, 0.91))
 										 .times(Mat4.scale(0.1, 0.1, 0.1));
@@ -239,18 +301,23 @@ export class Project extends Scene {
 	}
 
 	draw_mountain_range(context, program_state, model_transform, t) {
-		this.draw_mountain(context, program_state, model_transform, t);
-		model_transform = model_transform.times(Mat4.translation(-25, 0, -15));
-		this.draw_mountain(context, program_state, model_transform, t);
-		model_transform = model_transform.times(Mat4.translation(50, 0, -5))
-										 .times(Mat4.scale(2, 2, 2));
-		this.draw_mountain(context, program_state, model_transform, t);
+		let base = model_transform;
+		for(let i = 0; i < this.randomList.length-100; i += 50) {
+			model_transform = base;
+			model_transform = model_transform.times(Mat4.translation(5*this.randomList[i], 0, 2*(this.randomList[i+1] - 40)));
+			this.draw_mountain(context, program_state, model_transform, t, this.randomList[i]);
+		}
+		for(let i = 1; i < this.randomList.length-100; i += 50) {
+			model_transform = base;
+			model_transform = model_transform.times(Mat4.translation(-5*this.randomList[i], 0, -2*(this.randomList[i+1] - 40)));
+			this.draw_mountain(context, program_state, model_transform, t, this.randomList[i]);
+		}
 	}
 
     draw_ground(context, program_state, model_transform, t) {
         model_transform = model_transform.times(Mat4.translation(0, -5, 0))
                                          .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
-                                         .times(Mat4.scale(100, 100, 100));
+                                         .times(Mat4.scale(1000, 1000, 1000));
         this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand);
     }
 
@@ -270,8 +337,10 @@ export class Project extends Scene {
         const yellow = hex_color("#fac91a");
         let model_transform = Mat4.identity();
 
-        const light_position = vec4(30, 30, 30, 1);
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        const light_position = vec4(100, 100, 100, 1);
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 15000)];
+
+		this.move = false;
 
 		// ground
 		this.draw_ground(context, program_state, model_transform, t);
