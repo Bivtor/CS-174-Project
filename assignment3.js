@@ -23,6 +23,7 @@ export class Project extends Scene {
 			mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres/4, polyres/4),
 			leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres/4, polyres/4),
 			trunk: new defs.Cylindrical_Tube(polyres/6, polyres/6),
+			sphere_low_poly: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
         };
 
         // *** Materials
@@ -39,6 +40,8 @@ export class Project extends Scene {
                 {ambient: 1.0, diffusivity: .5, color: hex_color("#7b5c43")}),
 			white: new Material(new defs.Phong_Shader(),
                 {ambient: 1.0, diffusivity: .5, color: hex_color("#ffffff")}),
+			dark_white: new Material(new defs.Phong_Shader(),
+                {ambient: 0.9, diffusivity: .5, color: hex_color("#ffffff")}),
         }
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
 
@@ -46,6 +49,11 @@ export class Project extends Scene {
 		for (let i = 0; i < 750; i++) {
   			let randomInt = Math.floor(Math.random() * 51) - 25; // generate a random integer between -25 and 25
   			this.randomList.push(randomInt); 
+		}
+		this.randomList_pos = [];
+		for (let i = 0; i < 750; i++) {
+  			let randomInt = Math.floor(Math.random() * 51) + 10; // generate a random integer between 1 and 25
+  			this.randomList_pos.push(randomInt); 
 		}
 		this.noisySineList = [];
 		for (let i = 0; i < 20; i++) {
@@ -246,6 +254,31 @@ export class Project extends Scene {
 		}
 	}
 
+	draw_cloud(context, program_state, model_transform, t, j) {
+		let modulation = Math.cos(Math.PI/10 * t) /  + 2;
+
+		let base = model_transform;
+		for(let i = j; i < this.randomList.length / 10; i += 3) {
+			model_transform = base;
+			model_transform = model_transform.times(Mat4.translation(this.randomList[i]/15, this.randomList[i+1]/13, this.randomList[i+2]/15))
+											 .times(Mat4.scale(this.randomList_pos[i]/15, this.randomList_pos[i]/15, this.randomList_pos[i]/15));
+			this.shapes.sphere_low_poly.draw(context, program_state, model_transform, this.materials.dark_white);
+		}
+	}
+
+	draw_clouds(context, program_state, model_transform, t) {
+		model_transform = model_transform.times(Mat4.translation(1, 40, 1));
+		let base = model_transform;
+		let j = 0;
+		for(let i = 0; i < this.randomList.length / 10; i += 3) {
+			model_transform = base;
+			model_transform = model_transform.times(Mat4.translation(6*this.randomList[i], this.randomList[i+1]/10, 6*this.randomList[i+2]))
+											 .times(Mat4.scale(this.randomList_pos[i]/8, this.randomList_pos[i]/10, this.randomList_pos[i]/10));
+			this.draw_cloud(context, program_state, model_transform, t, j);
+			j += 3;
+		}
+	}
+
 	draw_tree_big(context, program_state, model_transform, t) {
 		model_transform = model_transform.times(Mat4.translation(0, -0.5, 0))
 										 .times(Mat4.rotation(-Math.PI/2, 1, 0, 0))
@@ -352,6 +385,7 @@ export class Project extends Scene {
 		this.draw_train(context, program_state, model_transform, t);
 		this.draw_trees(context, program_state, model_transform, t);
 		this.draw_mountain_range(context, program_state, model_transform, t);
+		this.draw_clouds(context, program_state, model_transform, t);
 		//this.draw_empty_box(context, program_state, model_transform, t);
         
 		model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
