@@ -7,7 +7,7 @@ import { Scene_To_Texture_Demo } from "./examples/scene-to-texture-demo.js";
 import { Surfaces_Demo } from "./examples/surfaces-demo.js";
 import { Text_Demo } from "./examples/text-demo.js";
 import { Transforms_Sandbox } from "./examples/transforms-sandbox.js";
-import { Assignment3 } from "./assignment3.js";
+import { Project } from "./assignment3.js";
 
 // Pull these names into this module's scope for convenience:
 const {
@@ -50,14 +50,14 @@ Object.assign(
   { Surfaces_Demo },
   { Text_Demo },
   { Transforms_Sandbox },
-  { Assignment3 }
+  { Project }
 );
 
 // ******************** End extra step
 
 // (Can define Main_Scene's class here)
 
-const Main_Scene = Assignment3;
+const Main_Scene = Project;
 const Additional_Scenes = [];
 
 export {

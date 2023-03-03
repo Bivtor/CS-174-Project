@@ -5,7 +5,7 @@ const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
 } = tiny;
 
-export class Assignment3 extends Scene {
+export class Project extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         super();
@@ -13,13 +13,16 @@ export class Assignment3 extends Scene {
 		let polyres = 24; // how detailed shapes are
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
+			axis: new defs.Axis_Arrows,
             box: new defs.Cube,
             plane: new defs.Regular_2D_Polygon(polyres, polyres),
             wheel: new defs.Cylindrical_Tube(2*polyres, 2*polyres),
-			disc: new defs.Regular_2D_Polygon(polyres, polyres),
+			engine: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())(polyres/2, polyres/2),
+			disc_low_poly: new defs.Regular_2D_Polygon(polyres/2, polyres/2),
+			disc: new defs.Regular_2D_Polygon(3*polyres, 3*polyres),
 			mountain: new defs.Cone_Tip(2*polyres, 2*polyres),
 			leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres/4, polyres/4),
-			trunk: new defs.Cylindrical_Tube(2*polyres, 2*polyres),
+			trunk: new defs.Cylindrical_Tube(polyres, polyres),
         };
 
         // *** Materials
@@ -42,15 +45,15 @@ export class Assignment3 extends Scene {
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => this.sun);
-        this.new_line();
-        this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
-        this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
-        this.new_line();
-        this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
-        this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
-        this.new_line();
-        this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
+        // this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => this.sun);
+        // this.new_line();
+        // this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
+        // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
+        // this.new_line();
+        // this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
+        // this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
+        // this.new_line();
+        // this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
     }
 
     draw_wheel(context, program_state, model_transform, t) {
@@ -63,9 +66,9 @@ export class Assignment3 extends Scene {
         this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);	
     }
 
-	draw_wheel_base(context, program_state, model_transform, t) {
+	draw_wheel_base(context, program_state, model_transform, t, spacing=1.5) {
 		let base = model_transform;
-		model_transform = model_transform.times(Mat4.translation(0.75, -1.25, 0))
+		model_transform = model_transform.times(Mat4.translation(spacing/2, -1.25, 0))
 										 .times(Mat4.scale(1, 0.35, 0.75));
 		this.draw_box(context, program_state, model_transform, t);
 		
@@ -74,7 +77,7 @@ export class Assignment3 extends Scene {
 		this.draw_wheel(context, program_state, model_transform, t);
 		model_transform = model_transform.times(Mat4.translation(0, 0, 1.5));
 		this.draw_wheel(context, program_state, model_transform, t);
-		model_transform = model_transform.times(Mat4.translation(1.5, 0, 0));
+		model_transform = model_transform.times(Mat4.translation(spacing, 0, 0));
 		this.draw_wheel(context, program_state, model_transform, t);
 		model_transform = model_transform.times(Mat4.translation(0, 0, -1.5));
 		this.draw_wheel(context, program_state, model_transform, t);
@@ -103,7 +106,7 @@ export class Assignment3 extends Scene {
 	draw_boxcar(context, program_state, model_transform, t, i) {
 		let base = model_transform;
 		// main body
-		if(i % 2 == 0) {
+		if(i % 2 == 0) { // no roof
 			model_transform = model_transform.times(Mat4.translation(0, -0.8, 0));
 			this.draw_empty_box(context, program_state, model_transform, t);
 			model_transform = model_transform.times(Mat4.scale(4, 1, 1));
@@ -116,7 +119,7 @@ export class Assignment3 extends Scene {
 			this.draw_box(context, program_state, model_transform, t);	
 
 		}
-		else {
+		else { // roof
 			model_transform = model_transform.times(Mat4.scale(4, 1, 1));
 			model_transform = model_transform.times(Mat4.translation(0, 0.1, 0));
 			this.draw_box(context, program_state, model_transform, t);
@@ -140,20 +143,59 @@ export class Assignment3 extends Scene {
 	
 	draw_locomotive(context, program_state, model_transform, t) {
 		let base = model_transform;
+		model_transform = model_transform.times(Mat4.translation(2.75, -0.9, 0))
+										 .times(Mat4.scale(0.35, 0.5, 1));
+		this.draw_empty_box(context, program_state, model_transform, t);
+		model_transform = base;
 		// links
 		model_transform = model_transform.times(Mat4.translation(2.75, -1.25, 0))
-										 .times(Mat4.scale(1.5, 0.1, 0.25));
+										 .times(Mat4.scale(1.75, 0.1, 0.25));
 		this.draw_box(context, program_state, model_transform, t);						 
 		// wheels
 		model_transform = base;
 		model_transform = model_transform.times(Mat4.translation(2, 0, 0));
 		this.draw_wheel_base(context, program_state, model_transform, t);
+		
+		// engine
+		model_transform = base;
+		base = base.times(Mat4.translation(-0.5, 0, 0));
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.translation(0, 0.25, 0))
+										 .times(Mat4.scale(1, 1.2, 1));
+		this.draw_box(context, program_state, model_transform, t);
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.translation(-2, -1, 0))
+										 .times(Mat4.scale(3.5, 0.2, 1));
+		this.draw_box(context, program_state, model_transform, t);
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.translation(-2, 0, 0))
+										 .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+										 .times(Mat4.scale(1, 1, 5.5));
+		this.shapes.engine.draw(context, program_state, model_transform, this.materials.pink);
+		model_transform = model_transform.times(Mat4.translation(0, 0, -0.5));
+		this.shapes.disc_low_poly.draw(context, program_state, model_transform, this.materials.pink);
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.translation(-4, 1, 0))
+										 .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
+										 .times(Mat4.scale(0.25, 0.25, 1));
+		this.shapes.wheel.draw(context, program_state, model_transform, this.materials.pink);
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.translation(0, 1.5, 0))
+										 .times(Mat4.scale(1.2, 0.1, 1.1));
+		this.draw_box(context, program_state, model_transform, t);
+		model_transform = base;
+		model_transform = model_transform.times(Mat4.translation(-1, 1, 0))
+										 .times(Mat4.scale(1.5, 1.5, 1.5));
+		this.draw_wheel_base(context, program_state, model_transform, t, 1);
+		model_transform = model_transform.times(Mat4.translation(-2.35, -0.5, 0))
+										 .times(Mat4.scale(0.75, 0.75, 1));
+		this.draw_wheel_base(context, program_state, model_transform, t, 1);
 	}
 
 	draw_train(context, program_state, model_transform, t) {
 		model_transform = model_transform.times(Mat4.translation(0, -3, 0));
 		this.draw_locomotive(context, program_state, model_transform, t);
-		for(let i = 0; i < 3; i++) {
+		for(let i = 0; i < 5; i++) {
 			model_transform = model_transform.times(Mat4.translation(8.8, 0, 0));			
 			this.draw_boxcar(context, program_state, model_transform, t, i);
 		}
@@ -242,6 +284,9 @@ export class Assignment3 extends Scene {
 		this.draw_trees(context, program_state, model_transform, t);
 		this.draw_mountain_range(context, program_state, model_transform, t);
 		//this.draw_empty_box(context, program_state, model_transform, t);
+        
+		model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
+        this.shapes.axis.draw(context, program_state, model_transform, this.materials.pink);
     }
 }
 
