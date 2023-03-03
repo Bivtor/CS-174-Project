@@ -611,6 +611,7 @@ export class Project extends Scene {
       this.materials.purple
     );
   }
+
   draw_rail_tie(context, program_state, model_transform, t) {
     model_transform = model_transform.times(Mat4.scale(0.05, 0.08, 0.5));
     this.shapes.box.draw(
