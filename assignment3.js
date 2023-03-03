@@ -10,18 +10,12 @@ export class Assignment3 extends Scene {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         super();
 
+		let polyres = 25; // how detailed shapes are
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             box: new defs.Cube,
-            plane: new defs.Regular_2D_Polygon(100, 100),
-            
-            // junk
-            planet1: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
-            planet2: new defs.Subdivision_Sphere(3),
-            planet3: new defs.Subdivision_Sphere(4),
-            planet3_ring: new defs.Torus(100, 100),
-            planet4: new defs.Subdivision_Sphere(4),
-            planet4_moon: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1),
+            plane: new defs.Regular_2D_Polygon(polyres, polyres),
+            wheel: new defs.Cylindrical_Tube(2*polyres, 2*polyres),
         };
 
         // *** Materials
@@ -30,31 +24,7 @@ export class Assignment3 extends Scene {
                 {ambient: 1.0, diffusivity: .5, color: hex_color("#f7cac9")}),
             purple: new Material(new defs.Phong_Shader(),
                 {ambient: 1.0, diffusivity: .5, color: hex_color("#c5b9cd")}),
-
-            // junk
-            test: new Material(new defs.Phong_Shader(),
-                {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
-            test2: new Material(new Gouraud_Shader(),
-                {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
-            ring: new Material(new Ring_Shader()),
-            sun: new Material(new defs.Phong_Shader(),
-                {ambient: 1.0, diffusivity: .5, color: hex_color("#F7CAC9")}),
-            planet1: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: 1.0, color: hex_color("#999999")}),
-            planet2_gouraud: new Material(new Gouraud_Shader(),
-                {ambient: 0, diffusivity: .1, color: hex_color("#80FFFF"), specularity: 1}),
-            planet2_phong: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: .1, color: hex_color("#80FFFF"), specularity: 1}),
-            planet3: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: 1.0, color: hex_color("#B08040"), specularity: 1}),
-            planet3_ring: new Material(new Ring_Shader(),
-                {ambient: 1.0, diffusivity: 0, color: hex_color("#B08040"), specularity: 0}),
-            planet4: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: .8, color: hex_color("#64c7e8"), specularity: 1, smoothness: 2}),
-            planet4_moon: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: .8, color: hex_color("#FF0000"), specularity: 1}),
         }
-
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
@@ -71,72 +41,34 @@ export class Assignment3 extends Scene {
         this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
     }
 
-    draw_planet1(context, program_state, model_transform, t, orbit_radius) {
-        let orbit_speed = 5 * t/orbit_radius;
-        model_transform = model_transform.times(Mat4.rotation(orbit_speed, 0, 1, 0))
-                                         .times(Mat4.translation(orbit_radius, 0, 0));
-        this.shapes.planet1.draw(context, program_state, model_transform, this.materials.planet1);
-        // camera
-        this.planet_1 = Mat4.inverse(model_transform.times(Mat4.translation(0, 0, 5)));
-    }
-    draw_planet2(context, program_state, model_transform, t, orbit_radius) {
-        let orbit_speed = 5 * t/orbit_radius;
-        model_transform = model_transform.times(Mat4.rotation(orbit_speed, 0, 1, 0))
-                                         .times(Mat4.translation(orbit_radius, 0, 0));
-        let material = this.materials.planet2_phong;
-        if(Math.floor(t) % 2 == 0){
-            material = this.materials.planet2_gouraud;
-        }
-        this.shapes.planet2.draw(context, program_state, model_transform, material);
-        // camera
-        this.planet_2 = Mat4.inverse(model_transform.times(Mat4.translation(0, 0, 5)));
-    }
-    draw_planet3(context, program_state, model_transform, t, orbit_radius) {
-        let orbit_speed = 5 * t/orbit_radius;
-        model_transform = model_transform.times(Mat4.rotation(orbit_speed, 0, 1, 0))
-                                         .times(Mat4.translation(orbit_radius, 0, 0))
-                                         .times(Mat4.rotation(Math.cos(t), 0, 1, 1))
-                                         .times(Mat4.rotation(Math.PI/2, 0, 1, 0));
-        this.shapes.planet3.draw(context, program_state, model_transform, this.materials.planet3);
-        // camera
-        this.planet_3 = Mat4.inverse(model_transform.times(Mat4.translation(0, 0, 5)));
-        // ring
-        model_transform = model_transform.times(Mat4.scale(3.5, 3.5, 0.1));
-        this.shapes.planet3_ring.draw(context, program_state, model_transform, this.materials.planet3_ring);
-    }
-    draw_planet4(context, program_state, model_transform, t, orbit_radius) {
-        let orbit_speed = 5 * t/orbit_radius;
-        model_transform = model_transform.times(Mat4.rotation(orbit_speed, 0, 1, 0))
-                                         .times(Mat4.translation(orbit_radius, 0, 0));
-        this.shapes.planet4.draw(context, program_state, model_transform, this.materials.planet4);
-        // camera
-        this.planet_4 = Mat4.inverse(model_transform.times(Mat4.translation(0, 0, 5)));
-        // moon
-        model_transform = model_transform.times(Mat4.rotation(t, 0, 1, 0))
-                                         .times(Mat4.translation(2, 0, 0))
-                                         .times(Mat4.scale(0.5, 0.5, 0.5));
-        this.shapes.planet4_moon.draw(context, program_state, model_transform, this.materials.planet4_moon);
-        // camera
-        this.moon = Mat4.inverse(model_transform.times(Mat4.translation(0, 0, 5)));
-    }
-
-    draw_planets(context, program_state, model_transform, t) {
-        // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
-        
-        // going outward from sun, orbits are 5 -> 8 -> 11 -> 14 units
-        // going outward from sun, orbit rotation time increases
-        this.draw_planet1(context, program_state, model_transform, t, 5);
-        this.draw_planet2(context, program_state, model_transform, t, 8);
-        this.draw_planet3(context, program_state, model_transform, t, 11); // and ring
-        this.draw_planet4(context, program_state, model_transform, t, 14); // and moon
+    draw_wheel(context, program_state, model_transform, t) {
+        model_transform = model_transform.times(Mat4.scale(0.5, 0.5, 0.25));
+    	this.shapes.wheel.draw(context, program_state, model_transform, this.materials.pink);
     }
 
     draw_box(context, program_state, model_transform, t) {
-        // draw
-        model_transform = model_transform.times(Mat4.translation(0, -3, 0))
-                                         .times(Mat4.scale(4, 1, 1));
-        this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+        model_transform = model_transform.times(Mat4.scale(4, 1, 1));
+        this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);	
     }
+
+	draw_wheel_base(context, program_state, model_transform, t) {
+		model_transform = model_transform.times(Mat4.translation(0, -1.5, -0.75));
+		this.draw_wheel(context, program_state, model_transform, t);
+		model_transform = model_transform.times(Mat4.translation(0, 0, 1.5));
+		this.draw_wheel(context, program_state, model_transform, t);
+		model_transform = model_transform.times(Mat4.translation(1.5, 0, 0));
+		this.draw_wheel(context, program_state, model_transform, t);
+		model_transform = model_transform.times(Mat4.translation(0, 0, -1.5));
+		this.draw_wheel(context, program_state, model_transform, t);
+	}
+
+	draw_boxcar(context, program_state, model_transform, t) {
+		// Draw the main body of the boxcar
+		this.draw_box(context, program_state, model_transform, t);
+		
+		this.draw_wheel_base(context, program_state, model_transform, t);
+	}
+	
 
     draw_ground(context, program_state, model_transform, t) {
         model_transform = model_transform.times(Mat4.translation(0, -5, 0))
@@ -164,9 +96,13 @@ export class Assignment3 extends Scene {
         const light_position = vec4(30, 30, 30, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
+		// ground
+		this.draw_ground(context, program_state, model_transform, t);
+
         // objects
-        this.draw_box(context, program_state, model_transform, t);
-        this.draw_ground(context, program_state, model_transform, t);
+        // this.draw_box(context, program_state, model_transform, t);
+		// this.draw_wheel(context, program_state, model_transform, t);
+		this.draw_boxcar(context, program_state, model_transform, t);
     }
 }
 
