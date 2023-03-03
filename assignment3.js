@@ -16,6 +16,7 @@ export class Assignment3 extends Scene {
             box: new defs.Cube,
             plane: new defs.Regular_2D_Polygon(polyres, polyres),
             wheel: new defs.Cylindrical_Tube(2*polyres, 2*polyres),
+			disc: new defs.Regular_2D_Polygon(polyres, polyres),
         };
 
         // *** Materials
@@ -24,6 +25,8 @@ export class Assignment3 extends Scene {
                 {ambient: 1.0, diffusivity: .5, color: hex_color("#f7cac9")}),
             purple: new Material(new defs.Phong_Shader(),
                 {ambient: 1.0, diffusivity: .5, color: hex_color("#c5b9cd")}),
+            sand: new Material(new defs.Phong_Shader(),
+                {ambient: 1.0, diffusivity: .5, color: hex_color("#d0dd97")}),
         }
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
     }
@@ -44,6 +47,7 @@ export class Assignment3 extends Scene {
     draw_wheel(context, program_state, model_transform, t) {
         model_transform = model_transform.times(Mat4.scale(0.5, 0.5, 0.25));
     	this.shapes.wheel.draw(context, program_state, model_transform, this.materials.pink);
+    	this.shapes.disc.draw(context, program_state, model_transform, this.materials.pink);
     }
 
     draw_box(context, program_state, model_transform, t) {
@@ -74,7 +78,7 @@ export class Assignment3 extends Scene {
         model_transform = model_transform.times(Mat4.translation(0, -5, 0))
                                          .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
                                          .times(Mat4.scale(100, 100, 100));
-        this.shapes.plane.draw(context, program_state, model_transform, this.materials.purple);
+        this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand);
     }
 
     display(context, program_state) {
