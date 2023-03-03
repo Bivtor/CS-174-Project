@@ -60,7 +60,7 @@ const Canvas_Widget = widgets.Canvas_Widget =
             if (!this.show_canvas)
                 canvas.style.display = "none";
 
-            this.webgl_manager = new tiny.Webgl_Manager(canvas, color(0, 0, 0, 1));
+            this.webgl_manager = new tiny.Webgl_Manager(canvas, color(0.57, 0.66, 0.82, 1));
             // Second parameter sets background color.
 
 
