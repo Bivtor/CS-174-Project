@@ -1,28 +1,13 @@
 import { defs, tiny } from "./examples/common.js";
 import { Canvas_Widget } from "./main-scene.js";
 
-const {
-  Vector,
-  Vector3,
-  vec,
-  vec3,
-  vec4,
-  color,
-  hex_color,
-  Shader,
-  Matrix,
-  Mat4,
-  Light,
-  Shape,
-  Material,
-  Scene,
-} = tiny;
+const { Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene } = tiny;
 
 export class Project extends Scene {
   constructor() {
     // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
     super();
-
+    this.trainspeed = 1;
     let polyres = 24; // how detailed shapes are
     // At the beginning of our program, load one of each of these shape definitions onto the GPU.
     this.shapes = {
@@ -30,24 +15,14 @@ export class Project extends Scene {
       box: new defs.Cube(),
       plane: new defs.Regular_2D_Polygon(polyres, polyres),
       wheel: new defs.Cylindrical_Tube(2 * polyres, 2 * polyres),
-      engine: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())(
-        polyres / 2,
-        polyres / 2
-      ),
+      engine: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())(polyres / 2, polyres / 2),
       disc_low_poly: new defs.Regular_2D_Polygon(polyres / 2, polyres / 2),
       circleoutline: new defs.circleoutline(polyres, polyres),
       disc: new defs.Regular_2D_Polygon(3 * polyres, 3 * polyres),
-      mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(
-        polyres / 4,
-        polyres / 4
-      ),
-      leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(
-        polyres / 4,
-        polyres / 4
-      ),
+      mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
+      leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
       trunk: new defs.Cylindrical_Tube(polyres / 6, polyres / 6),
-      sphere_low_poly:
-        new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
+      sphere_low_poly: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
     };
 
     // *** Materials
@@ -88,11 +63,7 @@ export class Project extends Scene {
         color: hex_color("#ffffff"),
       }),
     };
-    this.initial_camera_location = Mat4.look_at(
-      vec3(0, 10, 20),
-      vec3(0, 0, 0),
-      vec3(0, 1, 0)
-    );
+    this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
 
     this.randomList = [];
     for (let i = 0; i < 750; i++) {
@@ -130,12 +101,13 @@ export class Project extends Scene {
 
   make_control_panel() {
     // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-    this.key_triggered_button(
-      "Move",
-      ["w"],
-      () => (this.attached = () => this.move)
-    );
+    this.key_triggered_button("Increase Train Speed", ["t"], () => {
+      this.trainspeed += 1;
+    });
     this.new_line();
+    this.key_triggered_button("Decrease Train Speed", ["g"], () => {
+      this.trainspeed = this.trainspeed > 1 ? this.trainspeed - 1 : this.trainspeed;
+    });
     // this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
     // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
     // this.new_line();
@@ -146,78 +118,33 @@ export class Project extends Scene {
   }
 
   draw_wheel(context, program_state, model_transform, t) {
-    model_transform = model_transform
-      .times(Mat4.scale(0.5, 0.5, 0.25))
-      .times(Mat4.rotation(t / 1.5, 0, 0, 1));
-    this.shapes.wheel.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
-    this.shapes.disc.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    model_transform = model_transform.times(Mat4.scale(0.5, 0.5, 0.25)).times(Mat4.rotation(t / 1.5, 0, 0, 1));
+    this.shapes.wheel.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.disc.draw(context, program_state, model_transform, this.materials.pink);
     let base = model_transform;
     model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = base;
-    model_transform = model_transform.times(
-      Mat4.rotation(Math.PI / 2, 0, 0, 1)
-    );
+    model_transform = model_transform.times(Mat4.rotation(Math.PI / 2, 0, 0, 1));
     model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = base;
-    model_transform = model_transform.times(
-      Mat4.rotation(Math.PI / 4, 0, 0, 1)
-    );
+    model_transform = model_transform.times(Mat4.rotation(Math.PI / 4, 0, 0, 1));
     model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = base;
-    model_transform = model_transform.times(
-      Mat4.rotation(Math.PI / 2, 0, 0, 1)
-    );
+    model_transform = model_transform.times(Mat4.rotation(Math.PI / 2, 0, 0, 1));
     model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
   }
 
   draw_box(context, program_state, model_transform, t) {
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
   }
 
   draw_wheel_base(context, program_state, model_transform, t, spacing = 1.5) {
     let base = model_transform;
-    model_transform = model_transform
-      .times(Mat4.translation(spacing / 2, -1.25, 0))
-      .times(Mat4.scale(1, 0.35, 0.75));
+    model_transform = model_transform.times(Mat4.translation(spacing / 2, -1.25, 0)).times(Mat4.scale(1, 0.35, 0.75));
     this.draw_box(context, program_state, model_transform, t);
 
     model_transform = base;
@@ -234,48 +161,23 @@ export class Project extends Scene {
   draw_empty_box(context, program_state, model_transform, t) {
     let base = model_transform;
     model_transform = model_transform.times(Mat4.scale(4, 0.1, 1));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(0, 0.9, -0.9))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(4, 0.1, 1));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = model_transform.times(Mat4.translation(0, 18, 0));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(-3.9, 0.9, 0))
       .times(Mat4.rotation(Math.PI / 2, 0, 0, 1))
       .times(Mat4.scale(1, 0.1, 1));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = model_transform.times(Mat4.translation(0, -78, 0));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
   }
 
   draw_boxcar(context, program_state, model_transform, t, i) {
@@ -287,13 +189,9 @@ export class Project extends Scene {
       this.draw_empty_box(context, program_state, model_transform, t);
       model_transform = model_transform.times(Mat4.scale(4, 1, 1));
       // under belly
-      model_transform = model_transform
-        .times(Mat4.translation(0, -0.25, 0))
-        .times(Mat4.scale(1, 0.2, 0.5));
+      model_transform = model_transform.times(Mat4.translation(0, -0.25, 0)).times(Mat4.scale(1, 0.2, 0.5));
       this.draw_box(context, program_state, model_transform, t);
-      model_transform = model_transform
-        .times(Mat4.translation(0, -1, 0))
-        .times(Mat4.scale(1.1, 0.5, 0.5));
+      model_transform = model_transform.times(Mat4.translation(0, -1, 0)).times(Mat4.scale(1.1, 0.5, 0.5));
       this.draw_box(context, program_state, model_transform, t);
     } else {
       // roof
@@ -302,14 +200,10 @@ export class Project extends Scene {
       this.draw_box(context, program_state, model_transform, t);
       // under belly
       model_transform = model_transform.times(Mat4.translation(0, -0.1, 0));
-      model_transform = model_transform
-        .times(Mat4.translation(0, -0.25, 0))
-        .times(Mat4.scale(1, 1, 0.5));
+      model_transform = model_transform.times(Mat4.translation(0, -0.25, 0)).times(Mat4.scale(1, 1, 0.5));
       this.draw_box(context, program_state, model_transform, t);
       // links
-      model_transform = model_transform
-        .times(Mat4.translation(0, -1, 0))
-        .times(Mat4.scale(1.1, 0.1, 0.5));
+      model_transform = model_transform.times(Mat4.translation(0, -1, 0)).times(Mat4.scale(1.1, 0.1, 0.5));
       this.draw_box(context, program_state, model_transform, t);
     }
     // wheels
@@ -322,15 +216,11 @@ export class Project extends Scene {
 
   draw_locomotive(context, program_state, model_transform, t) {
     let base = model_transform;
-    model_transform = model_transform
-      .times(Mat4.translation(2.75, -0.9, 0))
-      .times(Mat4.scale(0.35, 0.5, 1));
+    model_transform = model_transform.times(Mat4.translation(2.75, -0.9, 0)).times(Mat4.scale(0.35, 0.5, 1));
     this.draw_empty_box(context, program_state, model_transform, t);
     model_transform = base;
     // links
-    model_transform = model_transform
-      .times(Mat4.translation(2.75, -1.25, 0))
-      .times(Mat4.scale(1.75, 0.1, 0.25));
+    model_transform = model_transform.times(Mat4.translation(2.75, -1.25, 0)).times(Mat4.scale(1.75, 0.1, 0.25));
     this.draw_box(context, program_state, model_transform, t);
     // wheels
     model_transform = base;
@@ -341,62 +231,37 @@ export class Project extends Scene {
     model_transform = base;
     base = base.times(Mat4.translation(-0.5, 0, 0));
     model_transform = base;
-    model_transform = model_transform
-      .times(Mat4.translation(0, 0.25, 0))
-      .times(Mat4.scale(1, 1.2, 1));
+    model_transform = model_transform.times(Mat4.translation(0, 0.25, 0)).times(Mat4.scale(1, 1.2, 1));
     this.draw_box(context, program_state, model_transform, t);
     model_transform = base;
-    model_transform = model_transform
-      .times(Mat4.translation(-2, -1, 0))
-      .times(Mat4.scale(3.5, 0.2, 1));
+    model_transform = model_transform.times(Mat4.translation(-2, -1, 0)).times(Mat4.scale(3.5, 0.2, 1));
     this.draw_box(context, program_state, model_transform, t);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(-2, 0, 0))
       .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
       .times(Mat4.scale(1, 1, 5.5));
-    this.shapes.engine.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.engine.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = model_transform.times(Mat4.translation(0, 0, -0.5));
-    this.shapes.disc_low_poly.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.disc_low_poly.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(-4, 1, 0))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(0.25, 0.25, 1));
-    this.shapes.wheel.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.wheel.draw(context, program_state, model_transform, this.materials.pink);
     model_transform = base;
-    model_transform = model_transform
-      .times(Mat4.translation(0, 1.5, 0))
-      .times(Mat4.scale(1.2, 0.1, 1.1));
+    model_transform = model_transform.times(Mat4.translation(0, 1.5, 0)).times(Mat4.scale(1.2, 0.1, 1.1));
     this.draw_box(context, program_state, model_transform, t);
     model_transform = base;
-    model_transform = model_transform
-      .times(Mat4.translation(-1, 1, 0))
-      .times(Mat4.scale(1.5, 1.5, 1.5));
+    model_transform = model_transform.times(Mat4.translation(-1, 1, 0)).times(Mat4.scale(1.5, 1.5, 1.5));
     this.draw_wheel_base(context, program_state, model_transform, t, 1);
-    model_transform = model_transform
-      .times(Mat4.translation(-2.35, -0.5, 0))
-      .times(Mat4.scale(0.75, 0.75, 1));
+    model_transform = model_transform.times(Mat4.translation(-2.35, -0.5, 0)).times(Mat4.scale(0.75, 0.75, 1));
     this.draw_wheel_base(context, program_state, model_transform, t, 1);
   }
 
   draw_train(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.translation(-1.1 * t, -3, 0));
+    model_transform = model_transform.times(Mat4.translation(-1.1 * this.get_train_speed(t), -3, 0));
     this.draw_locomotive(context, program_state, model_transform, t);
     for (let i = 0; i < 5; i++) {
       model_transform = model_transform.times(Mat4.translation(8.8, 0, 0));
@@ -410,27 +275,8 @@ export class Project extends Scene {
     let base = model_transform;
     for (let i = j; i < this.randomList.length / 10; i += 3) {
       model_transform = base;
-      model_transform = model_transform
-        .times(
-          Mat4.translation(
-            this.randomList[i] / 15,
-            this.randomList[i + 1] / 13,
-            this.randomList[i + 2] / 15
-          )
-        )
-        .times(
-          Mat4.scale(
-            this.randomList_pos[i] / 15,
-            this.randomList_pos[i] / 15,
-            this.randomList_pos[i] / 15
-          )
-        );
-      this.shapes.sphere_low_poly.draw(
-        context,
-        program_state,
-        model_transform,
-        this.materials.dark_white
-      );
+      model_transform = model_transform.times(Mat4.translation(this.randomList[i] / 15, this.randomList[i + 1] / 13, this.randomList[i + 2] / 15)).times(Mat4.scale(this.randomList_pos[i] / 15, this.randomList_pos[i] / 15, this.randomList_pos[i] / 15));
+      this.shapes.sphere_low_poly.draw(context, program_state, model_transform, this.materials.dark_white);
     }
   }
 
@@ -440,21 +286,7 @@ export class Project extends Scene {
     let j = 0;
     for (let i = 0; i < this.randomList.length / 10; i += 3) {
       model_transform = base;
-      model_transform = model_transform
-        .times(
-          Mat4.translation(
-            6 * this.randomList[i],
-            this.randomList[i + 1] / 10,
-            6 * this.randomList[i + 2]
-          )
-        )
-        .times(
-          Mat4.scale(
-            this.randomList_pos[i] / 8,
-            this.randomList_pos[i] / 10,
-            this.randomList_pos[i] / 10
-          )
-        );
+      model_transform = model_transform.times(Mat4.translation(6 * this.randomList[i], this.randomList[i + 1] / 10, 6 * this.randomList[i + 2])).times(Mat4.scale(this.randomList_pos[i] / 8, this.randomList_pos[i] / 10, this.randomList_pos[i] / 10));
       this.draw_cloud(context, program_state, model_transform, t, j);
       j += 3;
     }
@@ -465,21 +297,9 @@ export class Project extends Scene {
       .times(Mat4.translation(0, -0.5, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(3, 3, 3));
-    this.shapes.leaves.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.green
-    );
-    model_transform = model_transform
-      .times(Mat4.translation(0, 0, -1.5))
-      .times(Mat4.scale(0.25, 0.25, 1));
-    this.shapes.trunk.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.brown
-    );
+    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green);
+    model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.25, 0.25, 1));
+    this.shapes.trunk.draw(context, program_state, model_transform, this.materials.brown);
   }
 
   draw_tree_small(context, program_state, model_transform, t) {
@@ -487,34 +307,16 @@ export class Project extends Scene {
       .times(Mat4.translation(0, -3, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(1.5, 1.5, 1.5));
-    this.shapes.leaves.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.green
-    );
-    model_transform = model_transform
-      .times(Mat4.translation(0, 0, -1.5))
-      .times(Mat4.scale(0.15, 0.15, 1));
-    this.shapes.trunk.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.brown
-    );
+    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green);
+    model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.15, 0.15, 1));
+    this.shapes.trunk.draw(context, program_state, model_transform, this.materials.brown);
   }
 
   draw_trees(context, program_state, model_transform, t) {
     let base = model_transform;
     for (let i = 0; i < this.randomList.length - 2; i += 2) {
       model_transform = base;
-      model_transform = model_transform.times(
-        Mat4.translation(
-          5 * this.randomList[i],
-          0,
-          2 * (this.randomList[i + 1] - 29)
-        )
-      );
+      model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 29)));
       if (i % 4 == 0) {
         this.draw_tree_small(context, program_state, model_transform, t);
       } else {
@@ -523,13 +325,7 @@ export class Project extends Scene {
     }
     for (let i = 1; i < this.randomList.length - 2; i += 2) {
       model_transform = base;
-      model_transform = model_transform.times(
-        Mat4.translation(
-          -5 * this.randomList[i],
-          0,
-          -2 * (this.randomList[i + 1] - 29)
-        )
-      );
+      model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 29)));
       if (i % 4 == 0) {
         this.draw_tree_small(context, program_state, model_transform, t);
       } else {
@@ -543,86 +339,44 @@ export class Project extends Scene {
       .times(Mat4.translation(0, h, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(40, 40, 30));
-    this.shapes.mountain.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.purple
-    );
-    model_transform = model_transform
-      .times(Mat4.translation(0, 0, 0.91))
-      .times(Mat4.scale(0.1, 0.1, 0.1));
-    this.shapes.mountain.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.white
-    );
+    this.shapes.mountain.draw(context, program_state, model_transform, this.materials.purple);
+    model_transform = model_transform.times(Mat4.translation(0, 0, 0.91)).times(Mat4.scale(0.1, 0.1, 0.1));
+    this.shapes.mountain.draw(context, program_state, model_transform, this.materials.white);
   }
 
   draw_mountain_range(context, program_state, model_transform, t) {
     let base = model_transform;
     for (let i = 0; i < this.randomList.length - 100; i += 50) {
       model_transform = base;
-      model_transform = model_transform.times(
-        Mat4.translation(
-          5 * this.randomList[i],
-          0,
-          2 * (this.randomList[i + 1] - 40)
-        )
-      );
-      this.draw_mountain(
-        context,
-        program_state,
-        model_transform,
-        t,
-        this.randomList[i]
-      );
+      model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 40)));
+      this.draw_mountain(context, program_state, model_transform, t, this.randomList[i]);
     }
     for (let i = 1; i < this.randomList.length - 100; i += 50) {
       model_transform = base;
-      model_transform = model_transform.times(
-        Mat4.translation(
-          -5 * this.randomList[i],
-          0,
-          -2 * (this.randomList[i + 1] - 40)
-        )
-      );
-      this.draw_mountain(
-        context,
-        program_state,
-        model_transform,
-        t,
-        this.randomList[i]
-      );
+      model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 40)));
+      this.draw_mountain(context, program_state, model_transform, t, this.randomList[i]);
     }
   }
   //TODO Rails
   draw_rail(context, program_state, model_transform, t) {
-    model_transform = model_transform
-      .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
-      .times(Mat4.scale(150, 150, 150));
+    model_transform = model_transform.times(Mat4.rotation(Math.PI / 2, 1, 0, 0)).times(Mat4.scale(150, 150, 150));
 
-    this.shapes.circleoutline.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.purple
-    );
+    this.shapes.circleoutline.draw(context, program_state, model_transform, this.materials.purple);
   }
 
   draw_rail_tie(context, program_state, model_transform, t) {
     model_transform = model_transform.times(Mat4.scale(0.05, 0.08, 0.5));
-    this.shapes.box.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.brown
-    );
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
   }
   draw_rail_ties(context, program_state, model_transform, t) {
-    // for(var i =0; i)
-    this.draw_rail_tie(context, program_state, model_transform, t);
+    //Move to correct location
+    model_transform = model_transform.times(Mat4.translation(0, 0, -10));
+    for (var i = 0; i < 100; i += 10) {
+      model_transform = model_transform
+        // .times(Mat4.rotation(i, 0, 1, 0))
+        .times(Mat4.translation(-1, 0, -1));
+      this.draw_rail_tie(context, program_state, model_transform, t);
+    }
   }
 
   draw_railroad(context, program_state, model_transform, t) {
@@ -630,7 +384,7 @@ export class Project extends Scene {
     model_transform = model_transform.times(Mat4.translation(0, -5, 0));
 
     //Draw railroad crossties
-    // this.draw_rail_ties(context, program_state, model_transform, t);
+    this.draw_rail_ties(context, program_state, model_transform, t);
 
     //Draw rails
     this.draw_rail(context, program_state, model_transform, t);
@@ -643,31 +397,24 @@ export class Project extends Scene {
       .times(Mat4.translation(0, -5, 0))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(1000, 1000, 1000));
-    this.shapes.plane.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.sand
-    );
+    this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand);
+  }
+
+  get_train_speed(t) {
+    console.log(this.trainspeed);
+    return this.trainspeed > 1 ? this.trainspeed : t;
   }
 
   display(context, program_state) {
     // display():  Called once per frame of animation.
     // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
     if (!context.scratchpad.controls) {
-      this.children.push(
-        (context.scratchpad.controls = new defs.Movement_Controls())
-      );
+      this.children.push((context.scratchpad.controls = new defs.Movement_Controls()));
       // Define the global camera and projection matrices, which are stored in program_state.
       program_state.set_camera(this.initial_camera_location);
     }
 
-    program_state.projection_transform = Mat4.perspective(
-      Math.PI / 4,
-      context.width / context.height,
-      0.1,
-      1000
-    );
+    program_state.projection_transform = Mat4.perspective(Math.PI / 4, context.width / context.height, 0.1, 1000);
 
     const t = program_state.animation_time / 1000,
       dt = program_state.animation_delta_time / 1000;
@@ -675,9 +422,7 @@ export class Project extends Scene {
     let model_transform = Mat4.identity();
 
     const light_position = vec4(100, 100, 100, 1);
-    program_state.lights = [
-      new Light(light_position, color(1, 1, 1, 1), 15000),
-    ];
+    program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 15000)];
 
     this.move = false;
 
@@ -698,12 +443,7 @@ export class Project extends Scene {
     //this.draw_empty_box(context, program_state, model_transform, t);
 
     model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
-    this.shapes.axis.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    this.shapes.axis.draw(context, program_state, model_transform, this.materials.pink);
   }
 }
 
@@ -834,19 +574,9 @@ class Gouraud_Shader extends Shader {
     // cache and send those.  They will be the same throughout this draw
     // call, and thus across each instance of the vertex shader.
     // Transpose them since the GPU expects matrices as column-major arrays.
-    const PCM = gpu_state.projection_transform
-      .times(gpu_state.camera_inverse)
-      .times(model_transform);
-    gl.uniformMatrix4fv(
-      gpu.model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(model_transform.transposed())
-    );
-    gl.uniformMatrix4fv(
-      gpu.projection_camera_model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(PCM.transposed())
-    );
+    const PCM = gpu_state.projection_transform.times(gpu_state.camera_inverse).times(model_transform);
+    gl.uniformMatrix4fv(gpu.model_transform, false, Matrix.flatten_2D_to_1D(model_transform.transposed()));
+    gl.uniformMatrix4fv(gpu.projection_camera_model_transform, false, Matrix.flatten_2D_to_1D(PCM.transposed()));
 
     // Omitting lights will show only the material color, scaled by the ambient term:
     if (!gpu_state.lights.length) return;
@@ -854,12 +584,8 @@ class Gouraud_Shader extends Shader {
     const light_positions_flattened = [],
       light_colors_flattened = [];
     for (let i = 0; i < 4 * gpu_state.lights.length; i++) {
-      light_positions_flattened.push(
-        gpu_state.lights[Math.floor(i / 4)].position[i % 4]
-      );
-      light_colors_flattened.push(
-        gpu_state.lights[Math.floor(i / 4)].color[i % 4]
-      );
+      light_positions_flattened.push(gpu_state.lights[Math.floor(i / 4)].position[i % 4]);
+      light_colors_flattened.push(gpu_state.lights[Math.floor(i / 4)].color[i % 4]);
     }
     gl.uniform4fv(gpu.light_positions_or_vectors, light_positions_flattened);
     gl.uniform4fv(gpu.light_colors, light_colors_flattened);
@@ -892,30 +618,12 @@ class Gouraud_Shader extends Shader {
 }
 
 class Ring_Shader extends Shader {
-  update_GPU(
-    context,
-    gpu_addresses,
-    graphics_state,
-    model_transform,
-    material
-  ) {
+  update_GPU(context, gpu_addresses, graphics_state, model_transform, material) {
     // update_GPU():  Defining how to synchronize our JavaScript's variables to the GPU's:
-    const [P, C, M] = [
-        graphics_state.projection_transform,
-        graphics_state.camera_inverse,
-        model_transform,
-      ],
+    const [P, C, M] = [graphics_state.projection_transform, graphics_state.camera_inverse, model_transform],
       PCM = P.times(C).times(M);
-    context.uniformMatrix4fv(
-      gpu_addresses.model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(model_transform.transposed())
-    );
-    context.uniformMatrix4fv(
-      gpu_addresses.projection_camera_model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(PCM.transposed())
-    );
+    context.uniformMatrix4fv(gpu_addresses.model_transform, false, Matrix.flatten_2D_to_1D(model_transform.transposed()));
+    context.uniformMatrix4fv(gpu_addresses.projection_camera_model_transform, false, Matrix.flatten_2D_to_1D(PCM.transposed()));
   }
 
   shared_glsl_code() {

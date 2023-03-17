@@ -1,22 +1,7 @@
 import { tiny } from "../tiny-graphics.js";
 import { widgets } from "../tiny-graphics-widgets.js";
 // Pull these names into this module's scope for convenience:
-const {
-  Vector,
-  Vector3,
-  vec,
-  vec3,
-  vec4,
-  color,
-  Matrix,
-  Mat4,
-  Light,
-  Shape,
-  Material,
-  Shader,
-  Texture,
-  Scene,
-} = tiny;
+const { Vector, Vector3, vec, vec3, vec4, color, Matrix, Mat4, Light, Shape, Material, Shader, Texture, Scene } = tiny;
 
 Object.assign(tiny, widgets);
 
@@ -37,11 +22,7 @@ const Triangle = (defs.Triangle = class Triangle extends Shape {
     // know if the shape is pointed at light or not, and color it accordingly.
     this.arrays.normal = [vec3(0, 0, 1), vec3(0, 0, 1), vec3(0, 0, 1)];
     //  lastly, put each point somewhere in texture space too:
-    this.arrays.texture_coord = [
-      Vector.of(0, 0),
-      Vector.of(1, 0),
-      Vector.of(0, 1),
-    ];
+    this.arrays.texture_coord = [Vector.of(0, 0), Vector.of(1, 0), Vector.of(0, 1)];
     // Index into our vertices to connect them into a whole triangle:
     this.indices = [0, 1, 2];
     // A position, normal, and texture coord fully describes one "vertex".  What's the "i"th vertex?  Simply
@@ -59,18 +40,8 @@ const Square = (defs.Square = class Square extends Shape {
   constructor() {
     super("position", "normal", "texture_coord");
     // Specify the 4 square corner locations, and match those up with normal vectors:
-    this.arrays.position = Vector3.cast(
-      [-1, -1, 0],
-      [1, -1, 0],
-      [-1, 1, 0],
-      [1, 1, 0]
-    );
-    this.arrays.normal = Vector3.cast(
-      [0, 0, 1],
-      [0, 0, 1],
-      [0, 0, 1],
-      [0, 0, 1]
-    );
+    this.arrays.position = Vector3.cast([-1, -1, 0], [1, -1, 0], [-1, 1, 0], [1, 1, 0]);
+    this.arrays.normal = Vector3.cast([0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]);
     // Arrange the vertices into a square shape in texture space too:
     this.arrays.texture_coord = Vector.cast([0, 0], [1, 0], [0, 1], [1, 1]);
     // Use two triangles this time, indexing into four distinct vertices:
@@ -90,74 +61,25 @@ const Tetrahedron = (defs.Tetrahedron = class Tetrahedron extends Shape {
     if (!using_flat_shading) {
       // Method 1:  A tetrahedron with shared vertices.  Compact, performs better,
       // but can't produce flat shading or discontinuous seams in textures.
-      this.arrays.position = Vec.cast(
-        [0, 0, 0],
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-      );
-      this.arrays.normal = Vec.cast(
-        [-a, -a, -a],
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-      );
+      this.arrays.position = Vec.cast([0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]);
+      this.arrays.normal = Vec.cast([-a, -a, -a], [1, 0, 0], [0, 1, 0], [0, 0, 1]);
       this.arrays.texture_coord = Vec.cast([0, 0], [1, 0], [0, 1], [1, 1]);
       // Notice the repeats in the index list.  Vertices are shared
       // and appear in multiple triangles with this method.
       this.indices.push(0, 1, 2, 0, 1, 3, 0, 2, 3, 1, 2, 3);
     } else {
       // Method 2:  A tetrahedron with four independent triangles.
-      this.arrays.position = Vec.cast(
-        [0, 0, 0],
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 0],
-        [1, 0, 0],
-        [0, 0, 1],
-        [0, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1],
-        [0, 0, 1],
-        [1, 0, 0],
-        [0, 1, 0]
-      );
+      this.arrays.position = Vec.cast([0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0], [1, 0, 0], [0, 0, 1], [0, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 1], [1, 0, 0], [0, 1, 0]);
 
       // The essence of flat shading:  This time, values of normal vectors can
       // be constant per whole triangle.  Repeat them for all three vertices.
-      this.arrays.normal = Vec.cast(
-        [0, 0, -1],
-        [0, 0, -1],
-        [0, 0, -1],
-        [0, -1, 0],
-        [0, -1, 0],
-        [0, -1, 0],
-        [-1, 0, 0],
-        [-1, 0, 0],
-        [-1, 0, 0],
-        [a, a, a],
-        [a, a, a],
-        [a, a, a]
-      );
+      this.arrays.normal = Vec.cast([0, 0, -1], [0, 0, -1], [0, 0, -1], [0, -1, 0], [0, -1, 0], [0, -1, 0], [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [a, a, a], [a, a, a], [a, a, a]);
 
       // Each face in Method 2 also gets its own set of texture coords (half the
       // image is mapped onto each face).  We couldn't do this with shared
       // vertices since this features abrupt transitions when approaching the
       // same point from different directions.
-      this.arrays.texture_coord = Vec.cast(
-        [0, 0],
-        [1, 0],
-        [1, 1],
-        [0, 0],
-        [1, 0],
-        [1, 1],
-        [0, 0],
-        [1, 0],
-        [1, 1],
-        [0, 0],
-        [1, 0],
-        [1, 1]
-      );
+      this.arrays.texture_coord = Vec.cast([0, 0], [1, 0], [1, 1], [0, 0], [1, 0], [1, 1], [0, 0], [1, 0], [1, 1], [0, 0], [1, 0], [1, 1]);
       // Notice all vertices are unique this time.
       this.indices.push(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
     }
@@ -205,15 +127,8 @@ const Cube = (defs.Cube = class Cube extends Shape {
     // Loop 3 times (for each axis), and inside loop twice (for opposing cube sides):
     for (let i = 0; i < 3; i++)
       for (let j = 0; j < 2; j++) {
-        const square_transform = Mat4.rotation(
-          i == 0 ? Math.PI / 2 : 0,
-          1,
-          0,
-          0
-        )
-          .times(
-            Mat4.rotation(Math.PI * j - (i == 1 ? Math.PI / 2 : 0), 0, 1, 0)
-          )
+        const square_transform = Mat4.rotation(i == 0 ? Math.PI / 2 : 0, 1, 0, 0)
+          .times(Mat4.rotation(Math.PI * j - (i == 1 ? Math.PI / 2 : 0), 0, 1, 0))
           .times(Mat4.translation(0, 0, 1));
         // Calling this function of a Square (or any Shape) copies it into the specified
         // Shape (this one) at the specified matrix offset (square_transform):
@@ -222,110 +137,98 @@ const Cube = (defs.Cube = class Cube extends Shape {
   }
 });
 
-const Subdivision_Sphere =
-  (defs.Subdivision_Sphere = class Subdivision_Sphere extends Shape {
-    // **Subdivision_Sphere** defines a Sphere surface, with nice uniform triangles.  A subdivision surface
-    // (see Wikipedia article on those) is initially simple, then builds itself into a more and more
-    // detailed shape of the same layout.  Each act of subdivision makes it a better approximation of
-    // some desired mathematical surface by projecting each new point onto that surface's known
-    // implicit equation.  For a sphere, we begin with a closed 3-simplex (a tetrahedron).  For each
-    // face, connect the midpoints of each edge together to make more faces.  Repeat recursively until
-    // the desired level of detail is obtained.  Project all new vertices to unit vectors (onto the
-    // unit sphere) and group them into triangles by following the predictable pattern of the recursion.
-    constructor(max_subdivisions) {
-      super("position", "normal", "texture_coord");
-      // Start from the following equilateral tetrahedron:
-      const tetrahedron = [
-        [0, 0, -1],
-        [0, 0.9428, 0.3333],
-        [-0.8165, -0.4714, 0.3333],
-        [0.8165, -0.4714, 0.3333],
-      ];
-      this.arrays.position = Vector3.cast(...tetrahedron);
-      // Begin recursion:
-      this.subdivide_triangle(0, 1, 2, max_subdivisions);
-      this.subdivide_triangle(3, 2, 1, max_subdivisions);
-      this.subdivide_triangle(1, 0, 3, max_subdivisions);
-      this.subdivide_triangle(0, 2, 3, max_subdivisions);
+const Subdivision_Sphere = (defs.Subdivision_Sphere = class Subdivision_Sphere extends Shape {
+  // **Subdivision_Sphere** defines a Sphere surface, with nice uniform triangles.  A subdivision surface
+  // (see Wikipedia article on those) is initially simple, then builds itself into a more and more
+  // detailed shape of the same layout.  Each act of subdivision makes it a better approximation of
+  // some desired mathematical surface by projecting each new point onto that surface's known
+  // implicit equation.  For a sphere, we begin with a closed 3-simplex (a tetrahedron).  For each
+  // face, connect the midpoints of each edge together to make more faces.  Repeat recursively until
+  // the desired level of detail is obtained.  Project all new vertices to unit vectors (onto the
+  // unit sphere) and group them into triangles by following the predictable pattern of the recursion.
+  constructor(max_subdivisions) {
+    super("position", "normal", "texture_coord");
+    // Start from the following equilateral tetrahedron:
+    const tetrahedron = [
+      [0, 0, -1],
+      [0, 0.9428, 0.3333],
+      [-0.8165, -0.4714, 0.3333],
+      [0.8165, -0.4714, 0.3333],
+    ];
+    this.arrays.position = Vector3.cast(...tetrahedron);
+    // Begin recursion:
+    this.subdivide_triangle(0, 1, 2, max_subdivisions);
+    this.subdivide_triangle(3, 2, 1, max_subdivisions);
+    this.subdivide_triangle(1, 0, 3, max_subdivisions);
+    this.subdivide_triangle(0, 2, 3, max_subdivisions);
 
-      // With positions calculated, fill in normals and texture_coords of the finished Sphere:
-      for (let p of this.arrays.position) {
-        // Each point has a normal vector that simply goes to the point from the origin:
-        this.arrays.normal.push(p.copy());
+    // With positions calculated, fill in normals and texture_coords of the finished Sphere:
+    for (let p of this.arrays.position) {
+      // Each point has a normal vector that simply goes to the point from the origin:
+      this.arrays.normal.push(p.copy());
 
-        // Textures are tricky.  A Subdivision sphere has no straight seams to which image
-        // edges in UV space can be mapped.  The only way to avoid artifacts is to smoothly
-        // wrap & unwrap the image in reverse - displaying the texture twice on the sphere.
-        //  this.arrays.texture_coord.push( Vector.of( Math.asin( p[0]/Math.PI ) + .5, Math.asin( p[1]/Math.PI ) + .5 ) );
-        this.arrays.texture_coord.push(
-          Vector.of(
-            0.5 - Math.atan2(p[2], p[0]) / (2 * Math.PI),
-            0.5 + Math.asin(p[1]) / Math.PI
-          )
-        );
-      }
+      // Textures are tricky.  A Subdivision sphere has no straight seams to which image
+      // edges in UV space can be mapped.  The only way to avoid artifacts is to smoothly
+      // wrap & unwrap the image in reverse - displaying the texture twice on the sphere.
+      //  this.arrays.texture_coord.push( Vector.of( Math.asin( p[0]/Math.PI ) + .5, Math.asin( p[1]/Math.PI ) + .5 ) );
+      this.arrays.texture_coord.push(Vector.of(0.5 - Math.atan2(p[2], p[0]) / (2 * Math.PI), 0.5 + Math.asin(p[1]) / Math.PI));
+    }
 
-      // Fix the UV seam by duplicating vertices with offset UV:
-      const tex = this.arrays.texture_coord;
-      for (let i = 0; i < this.indices.length; i += 3) {
-        const a = this.indices[i],
-          b = this.indices[i + 1],
-          c = this.indices[i + 2];
-        if (
-          [
-            [a, b],
-            [a, c],
-            [b, c],
-          ].some((x) => Math.abs(tex[x[0]][0] - tex[x[1]][0]) > 0.5) &&
-          [a, b, c].some((x) => tex[x][0] < 0.5)
-        ) {
-          for (let q of [
-            [a, i],
-            [b, i + 1],
-            [c, i + 2],
-          ]) {
-            if (tex[q[0]][0] < 0.5) {
-              this.indices[q[1]] = this.arrays.position.length;
-              this.arrays.position.push(this.arrays.position[q[0]].copy());
-              this.arrays.normal.push(this.arrays.normal[q[0]].copy());
-              tex.push(tex[q[0]].plus(vec(1, 0)));
-            }
+    // Fix the UV seam by duplicating vertices with offset UV:
+    const tex = this.arrays.texture_coord;
+    for (let i = 0; i < this.indices.length; i += 3) {
+      const a = this.indices[i],
+        b = this.indices[i + 1],
+        c = this.indices[i + 2];
+      if (
+        [
+          [a, b],
+          [a, c],
+          [b, c],
+        ].some((x) => Math.abs(tex[x[0]][0] - tex[x[1]][0]) > 0.5) &&
+        [a, b, c].some((x) => tex[x][0] < 0.5)
+      ) {
+        for (let q of [
+          [a, i],
+          [b, i + 1],
+          [c, i + 2],
+        ]) {
+          if (tex[q[0]][0] < 0.5) {
+            this.indices[q[1]] = this.arrays.position.length;
+            this.arrays.position.push(this.arrays.position[q[0]].copy());
+            this.arrays.normal.push(this.arrays.normal[q[0]].copy());
+            tex.push(tex[q[0]].plus(vec(1, 0)));
           }
         }
       }
     }
+  }
 
-    subdivide_triangle(a, b, c, count) {
-      // subdivide_triangle(): Recurse through each level of detail
-      // by splitting triangle (a,b,c) into four smaller ones.
-      if (count <= 0) {
-        // Base case of recursion - we've hit the finest level of detail we want.
-        this.indices.push(a, b, c);
-        return;
-      }
-      // So we're not at the base case.  So, build 3 new vertices at midpoints,
-      // and extrude them out to touch the unit sphere (length 1).
-      let ab_vert = this.arrays.position[a]
-          .mix(this.arrays.position[b], 0.5)
-          .normalized(),
-        ac_vert = this.arrays.position[a]
-          .mix(this.arrays.position[c], 0.5)
-          .normalized(),
-        bc_vert = this.arrays.position[b]
-          .mix(this.arrays.position[c], 0.5)
-          .normalized();
-      // Here, push() returns the indices of the three new vertices (plus one).
-      let ab = this.arrays.position.push(ab_vert) - 1,
-        ac = this.arrays.position.push(ac_vert) - 1,
-        bc = this.arrays.position.push(bc_vert) - 1;
-      // Recurse on four smaller triangles, and we're done.  Skipping every fourth vertex index in
-      // our list takes you down one level of detail, and so on, due to the way we're building it.
-      this.subdivide_triangle(a, ab, ac, count - 1);
-      this.subdivide_triangle(ab, b, bc, count - 1);
-      this.subdivide_triangle(ac, bc, c, count - 1);
-      this.subdivide_triangle(ab, bc, ac, count - 1);
+  subdivide_triangle(a, b, c, count) {
+    // subdivide_triangle(): Recurse through each level of detail
+    // by splitting triangle (a,b,c) into four smaller ones.
+    if (count <= 0) {
+      // Base case of recursion - we've hit the finest level of detail we want.
+      this.indices.push(a, b, c);
+      return;
     }
-  });
+    // So we're not at the base case.  So, build 3 new vertices at midpoints,
+    // and extrude them out to touch the unit sphere (length 1).
+    let ab_vert = this.arrays.position[a].mix(this.arrays.position[b], 0.5).normalized(),
+      ac_vert = this.arrays.position[a].mix(this.arrays.position[c], 0.5).normalized(),
+      bc_vert = this.arrays.position[b].mix(this.arrays.position[c], 0.5).normalized();
+    // Here, push() returns the indices of the three new vertices (plus one).
+    let ab = this.arrays.position.push(ab_vert) - 1,
+      ac = this.arrays.position.push(ac_vert) - 1,
+      bc = this.arrays.position.push(bc_vert) - 1;
+    // Recurse on four smaller triangles, and we're done.  Skipping every fourth vertex index in
+    // our list takes you down one level of detail, and so on, due to the way we're building it.
+    this.subdivide_triangle(a, ab, ac, count - 1);
+    this.subdivide_triangle(ab, b, bc, count - 1);
+    this.subdivide_triangle(ac, bc, c, count - 1);
+    this.subdivide_triangle(ab, bc, ac, count - 1);
+  }
+});
 
 const Grid_Patch = (defs.Grid_Patch = class Grid_Patch extends Shape {
   // A grid of rows and columns you can distort. A tesselation of triangles connects the
@@ -348,20 +251,12 @@ const Grid_Patch = (defs.Grid_Patch = class Grid_Patch extends Shape {
       // Allocate a 2D array.
       // Use next_row_function to generate the start point of each row. Pass in the progress ratio,
       // and the previous point if it existed.
-      points[r][0] = next_row_function(
-        r / rows,
-        points[r - 1] && points[r - 1][0]
-      );
+      points[r][0] = next_row_function(r / rows, points[r - 1] && points[r - 1][0]);
     }
     for (let r = 0; r <= rows; r++) {
       // From those, use next_column function to generate the remaining points:
       for (let c = 0; c <= columns; c++) {
-        if (c > 0)
-          points[r][c] = next_column_function(
-            c / columns,
-            points[r][c - 1],
-            r / rows
-          );
+        if (c > 0) points[r][c] = next_column_function(c / columns, points[r][c - 1], r / rows);
 
         this.arrays.position.push(points[r][c]);
         // Interpolate texture coords from a provided range.
@@ -369,12 +264,7 @@ const Grid_Patch = (defs.Grid_Patch = class Grid_Patch extends Shape {
           a2 = r / rows,
           x_range = texture_coord_range[0],
           y_range = texture_coord_range[1];
-        this.arrays.texture_coord.push(
-          vec(
-            a1 * x_range[1] + (1 - a1) * x_range[0],
-            a2 * y_range[1] + (1 - a2) * y_range[0]
-          )
-        );
+        this.arrays.texture_coord.push(vec(a1 * x_range[1] + (1 - a1) * x_range[0], a2 * y_range[1] + (1 - a2) * y_range[0]));
       }
     }
 
@@ -396,16 +286,11 @@ const Grid_Patch = (defs.Grid_Patch = class Grid_Patch extends Shape {
         // we hit a boundary.
         // Take cross-products of pairs of neighbors, proceeding
         // a consistent rotational direction through the pairs:
-        for (let i = 0; i < 4; i++)
-          if (neighbors[i] && neighbors[(i + 1) % 4])
-            normal = normal.plus(
-              neighbors[i].minus(curr).cross(neighbors[(i + 1) % 4].minus(curr))
-            );
+        for (let i = 0; i < 4; i++) if (neighbors[i] && neighbors[(i + 1) % 4]) normal = normal.plus(neighbors[i].minus(curr).cross(neighbors[(i + 1) % 4].minus(curr)));
         normal.normalize();
         // Normalize the sum to get the average vector.
         // Store the normal if it's valid (not NaN or zero length), otherwise use a default:
-        if (normal.every((x) => x == x) && normal.norm() > 0.01)
-          this.arrays.normal.push(normal.copy());
+        if (normal.every((x) => x == x) && normal.norm() > 0.01) this.arrays.normal.push(normal.copy());
         else this.arrays.normal.push(vec3(0, 0, 1));
       }
     }
@@ -417,12 +302,7 @@ const Grid_Patch = (defs.Grid_Patch = class Grid_Patch extends Shape {
         i < 2 * columns;
         i++ // "1 11 0  11 1 12  2 12 1  12 2 13  3 13 2  13 3 14  4 14 3..."
       )
-        for (let j = 0; j < 3; j++)
-          this.indices.push(
-            h * (columns + 1) +
-              columns * ((i + (j % 2)) % 2) +
-              (~~((j % 3) / 2) ? ~~(i / 2) + 2 * (i % 2) : ~~(i / 2) + 1)
-          );
+        for (let j = 0; j < 3; j++) this.indices.push(h * (columns + 1) + columns * ((i + (j % 2)) % 2) + (~~((j % 3) / 2) ? ~~(i / 2) + 2 * (i % 2) : ~~(i / 2) + 1));
     }
   }
 
@@ -435,65 +315,38 @@ const Grid_Patch = (defs.Grid_Patch = class Grid_Patch extends Shape {
   }
 });
 
-const Surface_Of_Revolution =
-  (defs.Surface_Of_Revolution = class Surface_Of_Revolution extends Grid_Patch {
-    // SURFACE OF REVOLUTION: Produce a curved "sheet" of triangles with rows and columns.
-    // Begin with an input array of points, defining a 1D path curving through 3D space --
-    // now let each such point be a row.  Sweep that whole curve around the Z axis in equal
-    // steps, stopping and storing new points along the way; let each step be a column. Now
-    // we have a flexible "generalized cylinder" spanning an area until total_curvature_angle.
-    constructor(
-      rows,
-      columns,
-      points,
-      texture_coord_range,
-      total_curvature_angle = 2 * Math.PI
-    ) {
-      const row_operation = (i) => Grid_Patch.sample_array(points, i),
-        column_operation = (j, p) =>
-          Mat4.rotation(total_curvature_angle / columns, 0, 0, 1)
-            .times(p.to4(1))
-            .to3();
+const Surface_Of_Revolution = (defs.Surface_Of_Revolution = class Surface_Of_Revolution extends Grid_Patch {
+  // SURFACE OF REVOLUTION: Produce a curved "sheet" of triangles with rows and columns.
+  // Begin with an input array of points, defining a 1D path curving through 3D space --
+  // now let each such point be a row.  Sweep that whole curve around the Z axis in equal
+  // steps, stopping and storing new points along the way; let each step be a column. Now
+  // we have a flexible "generalized cylinder" spanning an area until total_curvature_angle.
+  constructor(rows, columns, points, texture_coord_range, total_curvature_angle = 2 * Math.PI) {
+    const row_operation = (i) => Grid_Patch.sample_array(points, i),
+      column_operation = (j, p) =>
+        Mat4.rotation(total_curvature_angle / columns, 0, 0, 1)
+          .times(p.to4(1))
+          .to3();
 
-      super(
-        rows,
-        columns,
-        row_operation,
-        column_operation,
-        texture_coord_range
-      );
-    }
-  });
+    super(rows, columns, row_operation, column_operation, texture_coord_range);
+  }
+});
 
-const Regular_2D_Polygon =
-  (defs.Regular_2D_Polygon = class Regular_2D_Polygon extends (
-    Surface_Of_Revolution
-  ) {
-    // Approximates a flat disk / circle
-    constructor(rows, columns) {
-      super(rows, columns, Vector3.cast([0, 0, 0], [1, 0, 0]));
-      this.arrays.normal = this.arrays.normal.map((x) => vec3(0, 0, 1));
-      this.arrays.texture_coord.forEach(
-        (x, i, a) =>
-          (a[i] = this.arrays.position[i].map((x) => x / 2 + 0.5).slice(0, 2))
-      );
-    }
-  });
+const Regular_2D_Polygon = (defs.Regular_2D_Polygon = class Regular_2D_Polygon extends Surface_Of_Revolution {
+  // Approximates a flat disk / circle
+  constructor(rows, columns) {
+    super(rows, columns, Vector3.cast([0, 0, 0], [1, 0, 0]));
+    this.arrays.normal = this.arrays.normal.map((x) => vec3(0, 0, 1));
+    this.arrays.texture_coord.forEach((x, i, a) => (a[i] = this.arrays.position[i].map((x) => x / 2 + 0.5).slice(0, 2)));
+  }
+});
 
-const Cylindrical_Tube =
-  (defs.Cylindrical_Tube = class Cylindrical_Tube extends (
-    Surface_Of_Revolution
-  ) {
-    // An open tube shape with equally sized sections, pointing down Z locally.
-    constructor(rows, columns, texture_range) {
-      super(
-        rows,
-        columns,
-        Vector3.cast([1, 0, 0.5], [1, 0, -0.5]),
-        texture_range
-      );
-    }
-  });
+const Cylindrical_Tube = (defs.Cylindrical_Tube = class Cylindrical_Tube extends Surface_Of_Revolution {
+  // An open tube shape with equally sized sections, pointing down Z locally.
+  constructor(rows, columns, texture_range) {
+    super(rows, columns, Vector3.cast([1, 0, 0.5], [1, 0, -0.5]), texture_range);
+  }
+});
 
 const Cone_Tip = (defs.Cone_Tip = class Cone_Tip extends Surface_Of_Revolution {
   // Note:  Touches the Z axis; squares degenerate into triangles as they sweep around.
@@ -522,12 +375,7 @@ const Torus = (defs.Torus = class Torus extends Shape {
           .times(p.to4(1))
           .to3()
       );
-    Surface_Of_Revolution.insert_transformed_copy_into(this, [
-      rows,
-      columns,
-      circle_points,
-      texture_range,
-    ]);
+    Surface_Of_Revolution.insert_transformed_copy_into(this, [rows, columns, circle_points, texture_range]);
   }
 });
 
@@ -551,12 +399,7 @@ const circleoutline = (defs.circleoutline = class circleoutline extends Shape {
           .times(p.to4(1))
           .to3()
       );
-    Surface_Of_Revolution.insert_transformed_copy_into(this, [
-      rows,
-      columns,
-      circle_points,
-      texture_range,
-    ]);
+    Surface_Of_Revolution.insert_transformed_copy_into(this, [rows, columns, circle_points, texture_range]);
   }
 });
 
@@ -573,12 +416,7 @@ const Grid_Sphere = (defs.Grid_Sphere = class Grid_Sphere extends Shape {
           .to3()
       );
 
-    Surface_Of_Revolution.insert_transformed_copy_into(this, [
-      rows,
-      columns,
-      semi_circle_points,
-      texture_range,
-    ]);
+    Surface_Of_Revolution.insert_transformed_copy_into(this, [rows, columns, semi_circle_points, texture_range]);
   }
 });
 
@@ -587,200 +425,102 @@ const Closed_Cone = (defs.Closed_Cone = class Closed_Cone extends Shape {
   constructor(rows, columns, texture_range) {
     super("position", "normal", "texture_coord");
     Cone_Tip.insert_transformed_copy_into(this, [rows, columns, texture_range]);
-    Regular_2D_Polygon.insert_transformed_copy_into(
-      this,
-      [1, columns],
-      Mat4.rotation(Math.PI, 0, 1, 0).times(Mat4.translation(0, 0, 1))
-    );
+    Regular_2D_Polygon.insert_transformed_copy_into(this, [1, columns], Mat4.rotation(Math.PI, 0, 1, 0).times(Mat4.translation(0, 0, 1)));
   }
 });
 
-const Rounded_Closed_Cone =
-  (defs.Rounded_Closed_Cone = class Rounded_Closed_Cone extends (
-    Surface_Of_Revolution
-  ) {
-    // An alternative without two separate sections
-    constructor(rows, columns, texture_range) {
-      super(
-        rows,
-        columns,
-        [vec3(0, 0, 1), vec3(1, 0, -1), vec3(0, 0, -1)],
-        texture_range
-      );
-    }
-  });
+const Rounded_Closed_Cone = (defs.Rounded_Closed_Cone = class Rounded_Closed_Cone extends Surface_Of_Revolution {
+  // An alternative without two separate sections
+  constructor(rows, columns, texture_range) {
+    super(rows, columns, [vec3(0, 0, 1), vec3(1, 0, -1), vec3(0, 0, -1)], texture_range);
+  }
+});
 
-const Capped_Cylinder = (defs.Capped_Cylinder = class Capped_Cylinder extends (
-  Shape
-) {
+const Capped_Cylinder = (defs.Capped_Cylinder = class Capped_Cylinder extends Shape {
   // Combine a tube and two regular polygons to make a closed cylinder.
   constructor(rows, columns, texture_range) {
     // Flat shade this to make a prism, where #columns = #sides.
     super("position", "normal", "texture_coord");
-    Cylindrical_Tube.insert_transformed_copy_into(this, [
-      rows,
-      columns,
-      texture_range,
-    ]);
-    Regular_2D_Polygon.insert_transformed_copy_into(
-      this,
-      [1, columns],
-      Mat4.translation(0, 0, 0.5)
-    );
-    Regular_2D_Polygon.insert_transformed_copy_into(
-      this,
-      [1, columns],
-      Mat4.rotation(Math.PI, 0, 1, 0).times(Mat4.translation(0, 0, 0.5))
-    );
+    Cylindrical_Tube.insert_transformed_copy_into(this, [rows, columns, texture_range]);
+    Regular_2D_Polygon.insert_transformed_copy_into(this, [1, columns], Mat4.translation(0, 0, 0.5));
+    Regular_2D_Polygon.insert_transformed_copy_into(this, [1, columns], Mat4.rotation(Math.PI, 0, 1, 0).times(Mat4.translation(0, 0, 0.5)));
   }
 });
 
-const Rounded_Capped_Cylinder =
-  (defs.Rounded_Capped_Cylinder = class Rounded_Capped_Cylinder extends (
-    Surface_Of_Revolution
-  ) {
-    // An alternative without three separate sections
-    constructor(rows, columns, texture_range) {
-      super(
-        rows,
-        columns,
-        [vec3(0, 0, 0.5), vec3(1, 0, 0.5), vec3(1, 0, -0.5), vec3(0, 0, -0.5)],
-        texture_range
-      );
-    }
-  });
+const Rounded_Capped_Cylinder = (defs.Rounded_Capped_Cylinder = class Rounded_Capped_Cylinder extends Surface_Of_Revolution {
+  // An alternative without three separate sections
+  constructor(rows, columns, texture_range) {
+    super(rows, columns, [vec3(0, 0, 0.5), vec3(1, 0, 0.5), vec3(1, 0, -0.5), vec3(0, 0, -0.5)], texture_range);
+  }
+});
 
 const Axis_Arrows = (defs.Axis_Arrows = class Axis_Arrows extends Shape {
   // An axis set with arrows, made out of a lot of various primitives.
   constructor() {
     super("position", "normal", "texture_coord");
     let stack = [];
-    Subdivision_Sphere.insert_transformed_copy_into(
-      this,
-      [3],
-      Mat4.rotation(Math.PI / 2, 0, 1, 0).times(Mat4.scale(0.25, 0.25, 0.25))
-    );
+    Subdivision_Sphere.insert_transformed_copy_into(this, [3], Mat4.rotation(Math.PI / 2, 0, 1, 0).times(Mat4.scale(0.25, 0.25, 0.25)));
     this.drawOneAxis(Mat4.identity(), [
       [0.67, 1],
       [0, 1],
     ]);
-    this.drawOneAxis(
-      Mat4.rotation(-Math.PI / 2, 1, 0, 0).times(Mat4.scale(1, -1, 1)),
-      [
-        [0.34, 0.66],
-        [0, 1],
-      ]
-    );
-    this.drawOneAxis(
-      Mat4.rotation(Math.PI / 2, 0, 1, 0).times(Mat4.scale(-1, 1, 1)),
-      [
-        [0, 0.33],
-        [0, 1],
-      ]
-    );
+    this.drawOneAxis(Mat4.rotation(-Math.PI / 2, 1, 0, 0).times(Mat4.scale(1, -1, 1)), [
+      [0.34, 0.66],
+      [0, 1],
+    ]);
+    this.drawOneAxis(Mat4.rotation(Math.PI / 2, 0, 1, 0).times(Mat4.scale(-1, 1, 1)), [
+      [0, 0.33],
+      [0, 1],
+    ]);
   }
 
   drawOneAxis(transform, tex) {
     // Use a different texture coordinate range for each of the three axes, so they show up differently.
-    Closed_Cone.insert_transformed_copy_into(
-      this,
-      [4, 10, tex],
-      transform
-        .times(Mat4.translation(0, 0, 2))
-        .times(Mat4.scale(0.25, 0.25, 0.25))
-    );
-    Cube.insert_transformed_copy_into(
-      this,
-      [],
-      transform
-        .times(Mat4.translation(0.95, 0.95, 0.45))
-        .times(Mat4.scale(0.05, 0.05, 0.45))
-    );
-    Cube.insert_transformed_copy_into(
-      this,
-      [],
-      transform
-        .times(Mat4.translation(0.95, 0, 0.5))
-        .times(Mat4.scale(0.05, 0.05, 0.4))
-    );
-    Cube.insert_transformed_copy_into(
-      this,
-      [],
-      transform
-        .times(Mat4.translation(0, 0.95, 0.5))
-        .times(Mat4.scale(0.05, 0.05, 0.4))
-    );
-    Cylindrical_Tube.insert_transformed_copy_into(
-      this,
-      [7, 7, tex],
-      transform.times(Mat4.translation(0, 0, 1)).times(Mat4.scale(0.1, 0.1, 2))
-    );
+    Closed_Cone.insert_transformed_copy_into(this, [4, 10, tex], transform.times(Mat4.translation(0, 0, 2)).times(Mat4.scale(0.25, 0.25, 0.25)));
+    Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(0.95, 0.95, 0.45)).times(Mat4.scale(0.05, 0.05, 0.45)));
+    Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(0.95, 0, 0.5)).times(Mat4.scale(0.05, 0.05, 0.4)));
+    Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(0, 0.95, 0.5)).times(Mat4.scale(0.05, 0.05, 0.4)));
+    Cylindrical_Tube.insert_transformed_copy_into(this, [7, 7, tex], transform.times(Mat4.translation(0, 0, 1)).times(Mat4.scale(0.1, 0.1, 2)));
   }
 });
 
-const Minimal_Shape = (defs.Minimal_Shape = class Minimal_Shape extends (
-  tiny.Vertex_Buffer
-) {
+const Minimal_Shape = (defs.Minimal_Shape = class Minimal_Shape extends tiny.Vertex_Buffer {
   // **Minimal_Shape** an even more minimal triangle, with three
   // vertices each holding a 3D position and a color.
   constructor() {
     super("position", "color");
     // Describe the where the points of a triangle are in space, and also describe their colors:
     this.arrays.position = [vec3(0, 0, 0), vec3(1, 0, 0), vec3(0, 1, 0)];
-    this.arrays.color = [
-      color(1, 0, 0, 1),
-      color(0, 1, 0, 1),
-      color(0, 0, 1, 1),
-    ];
+    this.arrays.color = [color(1, 0, 0, 1), color(0, 1, 0, 1), color(0, 0, 1, 1)];
   }
 });
 
-const Minimal_Webgl_Demo =
-  (defs.Minimal_Webgl_Demo = class Minimal_Webgl_Demo extends Scene {
-    // **Minimal_Webgl_Demo** is an extremely simple example of a Scene class.
-    constructor(webgl_manager, control_panel) {
-      super(webgl_manager, control_panel);
-      // Don't create any DOM elements to control this scene:
-      this.widget_options = { make_controls: false, show_explanation: false };
-      // Send a Triangle's vertices to the GPU's buffers:
-      this.shapes = { triangle: new Minimal_Shape() };
-      this.shader = new Basic_Shader();
-    }
+const Minimal_Webgl_Demo = (defs.Minimal_Webgl_Demo = class Minimal_Webgl_Demo extends Scene {
+  // **Minimal_Webgl_Demo** is an extremely simple example of a Scene class.
+  constructor(webgl_manager, control_panel) {
+    super(webgl_manager, control_panel);
+    // Don't create any DOM elements to control this scene:
+    this.widget_options = { make_controls: false, show_explanation: false };
+    // Send a Triangle's vertices to the GPU's buffers:
+    this.shapes = { triangle: new Minimal_Shape() };
+    this.shader = new Basic_Shader();
+  }
 
-    display(context, graphics_state) {
-      // Every frame, simply draw the Triangle at its default location.
-      this.shapes.triangle.draw(
-        context,
-        graphics_state,
-        Mat4.identity(),
-        new Material(this.shader)
-      );
-    }
-  });
+  display(context, graphics_state) {
+    // Every frame, simply draw the Triangle at its default location.
+    this.shapes.triangle.draw(context, graphics_state, Mat4.identity(), new Material(this.shader));
+  }
+});
 
 const Basic_Shader = (defs.Basic_Shader = class Basic_Shader extends Shader {
   // **Basic_Shader** is nearly the simplest example of a subclass of Shader, which stores and
   // maanges a GPU program.  Basic_Shader is a trivial pass-through shader that applies a
   // shape's matrices and then simply samples literal colors stored at each vertex.
-  update_GPU(
-    context,
-    gpu_addresses,
-    graphics_state,
-    model_transform,
-    material
-  ) {
+  update_GPU(context, gpu_addresses, graphics_state, model_transform, material) {
     // update_GPU():  Defining how to synchronize our JavaScript's variables to the GPU's:
-    const [P, C, M] = [
-        graphics_state.projection_transform,
-        graphics_state.camera_inverse,
-        model_transform,
-      ],
+    const [P, C, M] = [graphics_state.projection_transform, graphics_state.camera_inverse, model_transform],
       PCM = P.times(C).times(M);
-    context.uniformMatrix4fv(
-      gpu_addresses.projection_camera_model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(PCM.transposed())
-    );
+    context.uniformMatrix4fv(gpu_addresses.projection_camera_model_transform, false, Matrix.flatten_2D_to_1D(PCM.transposed()));
   }
 
   shared_glsl_code() {
@@ -826,21 +566,10 @@ const Funny_Shader = (defs.Funny_Shader = class Funny_Shader extends Shader {
   // texture coordinates but without an input image.
   update_GPU(context, gpu_addresses, program_state, model_transform, material) {
     // update_GPU():  Define how to synchronize our JavaScript's variables to the GPU's:
-    const [P, C, M] = [
-        program_state.projection_transform,
-        program_state.camera_inverse,
-        model_transform,
-      ],
+    const [P, C, M] = [program_state.projection_transform, program_state.camera_inverse, model_transform],
       PCM = P.times(C).times(M);
-    context.uniformMatrix4fv(
-      gpu_addresses.projection_camera_model_transform,
-      false,
-      Mat.flatten_2D_to_1D(PCM.transposed())
-    );
-    context.uniform1f(
-      gpu_addresses.animation_time,
-      program_state.animation_time / 1000
-    );
+    context.uniformMatrix4fv(gpu_addresses.projection_camera_model_transform, false, Mat.flatten_2D_to_1D(PCM.transposed()));
+    context.uniform1f(gpu_addresses.animation_time, program_state.animation_time / 1000);
   }
 
   shared_glsl_code() {
@@ -1015,19 +744,9 @@ const Phong_Shader = (defs.Phong_Shader = class Phong_Shader extends Shader {
     // cache and send those.  They will be the same throughout this draw
     // call, and thus across each instance of the vertex shader.
     // Transpose them since the GPU expects matrices as column-major arrays.
-    const PCM = gpu_state.projection_transform
-      .times(gpu_state.camera_inverse)
-      .times(model_transform);
-    gl.uniformMatrix4fv(
-      gpu.model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(model_transform.transposed())
-    );
-    gl.uniformMatrix4fv(
-      gpu.projection_camera_model_transform,
-      false,
-      Matrix.flatten_2D_to_1D(PCM.transposed())
-    );
+    const PCM = gpu_state.projection_transform.times(gpu_state.camera_inverse).times(model_transform);
+    gl.uniformMatrix4fv(gpu.model_transform, false, Matrix.flatten_2D_to_1D(model_transform.transposed()));
+    gl.uniformMatrix4fv(gpu.projection_camera_model_transform, false, Matrix.flatten_2D_to_1D(PCM.transposed()));
 
     // Omitting lights will show only the material color, scaled by the ambient term:
     if (!gpu_state.lights.length) return;
@@ -1035,12 +754,8 @@ const Phong_Shader = (defs.Phong_Shader = class Phong_Shader extends Shader {
     const light_positions_flattened = [],
       light_colors_flattened = [];
     for (let i = 0; i < 4 * gpu_state.lights.length; i++) {
-      light_positions_flattened.push(
-        gpu_state.lights[Math.floor(i / 4)].position[i % 4]
-      );
-      light_colors_flattened.push(
-        gpu_state.lights[Math.floor(i / 4)].color[i % 4]
-      );
+      light_positions_flattened.push(gpu_state.lights[Math.floor(i / 4)].position[i % 4]);
+      light_colors_flattened.push(gpu_state.lights[Math.floor(i / 4)].color[i % 4]);
     }
     gl.uniform4fv(gpu.light_positions_or_vectors, light_positions_flattened);
     gl.uniform4fv(gpu.light_colors, light_colors_flattened);
@@ -1072,9 +787,7 @@ const Phong_Shader = (defs.Phong_Shader = class Phong_Shader extends Shader {
   }
 });
 
-const Textured_Phong = (defs.Textured_Phong = class Textured_Phong extends (
-  Phong_Shader
-) {
+const Textured_Phong = (defs.Textured_Phong = class Textured_Phong extends Phong_Shader {
   // **Textured_Phong** is a Phong Shader extended to addditionally decal a
   // texture image over the drawn shape, lined up according to the texture
   // coordinates that are stored at each shape vertex.
@@ -1127,13 +840,7 @@ const Textured_Phong = (defs.Textured_Phong = class Textured_Phong extends (
 
   update_GPU(context, gpu_addresses, gpu_state, model_transform, material) {
     // update_GPU(): Add a little more to the base class's version of this method.
-    super.update_GPU(
-      context,
-      gpu_addresses,
-      gpu_state,
-      model_transform,
-      material
-    );
+    super.update_GPU(context, gpu_addresses, gpu_state, model_transform, material);
 
     if (material.texture && material.texture.ready) {
       // Select texture unit 0 for the fragment shader Sampler2D uniform called "texture":
@@ -1144,9 +851,7 @@ const Textured_Phong = (defs.Textured_Phong = class Textured_Phong extends (
   }
 });
 
-const Fake_Bump_Map = (defs.Fake_Bump_Map = class Fake_Bump_Map extends (
-  Textured_Phong
-) {
+const Fake_Bump_Map = (defs.Fake_Bump_Map = class Fake_Bump_Map extends Textured_Phong {
   // **Fake_Bump_Map** Same as Phong_Shader, except adds a line of code to
   // compute a new normal vector, perturbed according to texture color.
   fragment_glsl_code() {
@@ -1172,369 +877,290 @@ const Fake_Bump_Map = (defs.Fake_Bump_Map = class Fake_Bump_Map extends (
   }
 });
 
-const Movement_Controls =
-  (defs.Movement_Controls = class Movement_Controls extends Scene {
-    // **Movement_Controls** is a Scene that can be attached to a canvas, like any other
-    // Scene, but it is a Secondary Scene Component -- meant to stack alongside other
-    // scenes.  Rather than drawing anything it embeds both first-person and third-
-    // person style controls into the website.  These can be used to manually move your
-    // camera or other objects smoothly through your scene using key, mouse, and HTML
-    // button controls to help you explore what's in it.
-    constructor() {
-      super();
-      const data_members = {
-        roll: 0,
-        look_around_locked: true,
-        thrust: vec3(0, 0, 0),
-        pos: vec3(0, 0, 0),
-        z_axis: vec3(0, 0, 0),
-        radians_per_frame: 1 / 200,
-        meters_per_frame: 20,
-        speed_multiplier: 1,
-      };
-      Object.assign(this, data_members);
+const Movement_Controls = (defs.Movement_Controls = class Movement_Controls extends Scene {
+  // **Movement_Controls** is a Scene that can be attached to a canvas, like any other
+  // Scene, but it is a Secondary Scene Component -- meant to stack alongside other
+  // scenes.  Rather than drawing anything it embeds both first-person and third-
+  // person style controls into the website.  These can be used to manually move your
+  // camera or other objects smoothly through your scene using key, mouse, and HTML
+  // button controls to help you explore what's in it.
+  constructor() {
+    super();
+    const data_members = {
+      roll: 0,
+      look_around_locked: true,
+      thrust: vec3(0, 0, 0),
+      pos: vec3(0, 0, 0),
+      z_axis: vec3(0, 0, 0),
+      radians_per_frame: 1 / 200,
+      meters_per_frame: 20,
+      speed_multiplier: 1,
+    };
+    Object.assign(this, data_members);
 
-      this.mouse_enabled_canvases = new Set();
-      this.will_take_over_graphics_state = true;
-    }
+    this.mouse_enabled_canvases = new Set();
+    this.will_take_over_graphics_state = true;
+  }
 
-    set_recipient(matrix_closure, inverse_closure) {
-      // set_recipient(): The camera matrix is not actually stored here inside Movement_Controls;
-      // instead, track an external target matrix to modify.  Targets must be pointer references
-      // made using closures.
-      this.matrix = matrix_closure;
-      this.inverse = inverse_closure;
-    }
+  set_recipient(matrix_closure, inverse_closure) {
+    // set_recipient(): The camera matrix is not actually stored here inside Movement_Controls;
+    // instead, track an external target matrix to modify.  Targets must be pointer references
+    // made using closures.
+    this.matrix = matrix_closure;
+    this.inverse = inverse_closure;
+  }
 
-    reset(graphics_state) {
-      // reset(): Initially, the default target is the camera matrix that Shaders use, stored in the
-      // encountered program_state object.  Targets must be pointer references made using closures.
-      this.set_recipient(
-        () => graphics_state.camera_transform,
-        () => graphics_state.camera_inverse
-      );
-    }
+  reset(graphics_state) {
+    // reset(): Initially, the default target is the camera matrix that Shaders use, stored in the
+    // encountered program_state object.  Targets must be pointer references made using closures.
+    this.set_recipient(
+      () => graphics_state.camera_transform,
+      () => graphics_state.camera_inverse
+    );
+  }
 
-    add_mouse_controls(canvas) {
-      // add_mouse_controls():  Attach HTML mouse events to the drawing canvas.
-      // First, measure mouse steering, for rotating the flyaround camera:
-      this.mouse = { from_center: vec(0, 0) };
-      const mouse_position = (e, rect = canvas.getBoundingClientRect()) =>
-        vec(
-          e.clientX - (rect.left + rect.right) / 2,
-          e.clientY - (rect.bottom + rect.top) / 2
-        );
-      // Set up mouse response.  The last one stops us from reacting if the mouse leaves the canvas:
-      document.addEventListener("mouseup", (e) => {
-        this.mouse.anchor = undefined;
-      });
-      canvas.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        this.mouse.anchor = mouse_position(e);
-      });
-      canvas.addEventListener("mousemove", (e) => {
-        e.preventDefault();
-        this.mouse.from_center = mouse_position(e);
-      });
-      canvas.addEventListener("mouseout", (e) => {
-        if (!this.mouse.anchor) this.mouse.from_center.scale_by(0);
-      });
-    }
+  add_mouse_controls(canvas) {
+    // add_mouse_controls():  Attach HTML mouse events to the drawing canvas.
+    // First, measure mouse steering, for rotating the flyaround camera:
+    this.mouse = { from_center: vec(0, 0) };
+    const mouse_position = (e, rect = canvas.getBoundingClientRect()) => vec(e.clientX - (rect.left + rect.right) / 2, e.clientY - (rect.bottom + rect.top) / 2);
+    // Set up mouse response.  The last one stops us from reacting if the mouse leaves the canvas:
+    document.addEventListener("mouseup", (e) => {
+      this.mouse.anchor = undefined;
+    });
+    canvas.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      this.mouse.anchor = mouse_position(e);
+    });
+    canvas.addEventListener("mousemove", (e) => {
+      e.preventDefault();
+      this.mouse.from_center = mouse_position(e);
+    });
+    canvas.addEventListener("mouseout", (e) => {
+      if (!this.mouse.anchor) this.mouse.from_center.scale_by(0);
+    });
+  }
 
-    show_explanation(document_element) {}
+  show_explanation(document_element) {}
 
-    make_control_panel() {
-      // make_control_panel(): Sets up a panel of interactive HTML elements, including
-      // buttons with key bindings for affecting this scene, and live info readouts.
-      this.control_panel.innerHTML +=
-        "Click and drag the scene to spin your viewpoint around it.<br>";
-      this.live_string(
-        (box) =>
-          (box.textContent =
-            "- Position: " +
-            this.pos[0].toFixed(2) +
-            ", " +
-            this.pos[1].toFixed(2) +
-            ", " +
-            this.pos[2].toFixed(2))
-      );
-      this.new_line();
-      // The facing directions are surprisingly affected by the left hand rule:
-      this.live_string(
-        (box) =>
-          (box.textContent =
-            "- Facing: " +
-            ((this.z_axis[0] > 0 ? "West " : "East ") +
-              (this.z_axis[1] > 0 ? "Down " : "Up ") +
-              (this.z_axis[2] > 0 ? "North" : "South")))
-      );
-      this.new_line();
-      this.new_line();
+  make_control_panel() {
+    // make_control_panel(): Sets up a panel of interactive HTML elements, including
+    // buttons with key bindings for affecting this scene, and live info readouts.
+    this.control_panel.innerHTML += "Click and drag the scene to spin your viewpoint around it.<br>";
+    this.live_string((box) => (box.textContent = "- Position: " + this.pos[0].toFixed(2) + ", " + this.pos[1].toFixed(2) + ", " + this.pos[2].toFixed(2)));
+    this.new_line();
+    // The facing directions are surprisingly affected by the left hand rule:
+    this.live_string((box) => (box.textContent = "- Facing: " + ((this.z_axis[0] > 0 ? "West " : "East ") + (this.z_axis[1] > 0 ? "Down " : "Up ") + (this.z_axis[2] > 0 ? "North" : "South"))));
+    this.new_line();
+    this.new_line();
 
-      this.key_triggered_button(
-        "Up",
-        [" "],
-        () => (this.thrust[1] = -1),
-        undefined,
-        () => (this.thrust[1] = 0)
-      );
-      this.key_triggered_button(
-        "Forward",
-        ["w"],
-        () => (this.thrust[2] = 1),
-        undefined,
-        () => (this.thrust[2] = 0)
-      );
-      this.new_line();
-      this.key_triggered_button(
-        "Left",
-        ["a"],
-        () => (this.thrust[0] = 1),
-        undefined,
-        () => (this.thrust[0] = 0)
-      );
-      this.key_triggered_button(
-        "Back",
-        ["s"],
-        () => (this.thrust[2] = -1),
-        undefined,
-        () => (this.thrust[2] = 0)
-      );
-      this.key_triggered_button(
-        "Right",
-        ["d"],
-        () => (this.thrust[0] = -1),
-        undefined,
-        () => (this.thrust[0] = 0)
-      );
-      this.new_line();
-      this.key_triggered_button(
-        "Down",
-        ["z"],
-        () => (this.thrust[1] = 1),
-        undefined,
-        () => (this.thrust[1] = 0)
-      );
+    this.key_triggered_button(
+      "Up",
+      [" "],
+      () => (this.thrust[1] = -1),
+      undefined,
+      () => (this.thrust[1] = 0)
+    );
+    this.key_triggered_button(
+      "Forward",
+      ["w"],
+      () => (this.thrust[2] = 1),
+      undefined,
+      () => (this.thrust[2] = 0)
+    );
+    this.new_line();
+    this.key_triggered_button(
+      "Left",
+      ["a"],
+      () => (this.thrust[0] = 1),
+      undefined,
+      () => (this.thrust[0] = 0)
+    );
+    this.key_triggered_button(
+      "Back",
+      ["s"],
+      () => (this.thrust[2] = -1),
+      undefined,
+      () => (this.thrust[2] = 0)
+    );
+    this.key_triggered_button(
+      "Right",
+      ["d"],
+      () => (this.thrust[0] = -1),
+      undefined,
+      () => (this.thrust[0] = 0)
+    );
+    this.new_line();
+    this.key_triggered_button(
+      "Down",
+      ["z"],
+      () => (this.thrust[1] = 1),
+      undefined,
+      () => (this.thrust[1] = 0)
+    );
 
-      const speed_controls = this.control_panel.appendChild(
-        document.createElement("span")
-      );
-      speed_controls.style.margin = "30px";
-      this.key_triggered_button(
-        "-",
-        ["o"],
-        () => (this.speed_multiplier /= 1.2),
-        undefined,
-        undefined,
-        undefined,
-        speed_controls
-      );
-      this.live_string((box) => {
-        box.textContent = "Speed: " + this.speed_multiplier.toFixed(2);
-      }, speed_controls);
-      this.key_triggered_button(
-        "+",
-        ["p"],
-        () => (this.speed_multiplier *= 1.2),
-        undefined,
-        undefined,
-        undefined,
-        speed_controls
-      );
-      this.new_line();
-      this.key_triggered_button(
-        "Roll left",
-        [","],
-        () => (this.roll = 1),
-        undefined,
-        () => (this.roll = 0)
-      );
-      this.key_triggered_button(
-        "Roll right",
-        ["."],
-        () => (this.roll = -1),
-        undefined,
-        () => (this.roll = 0)
-      );
-      this.new_line();
-      this.key_triggered_button(
-        "(Un)freeze mouse look around",
-        ["f"],
-        () => (this.look_around_locked ^= 1),
-        "#8B8885"
-      );
-      this.new_line();
-      this.key_triggered_button(
-        "Go to world origin",
-        ["r"],
-        () => {
-          this.matrix().set_identity(4, 4);
-          this.inverse().set_identity(4, 4);
-        },
-        "#8B8885"
-      );
-      this.new_line();
+    const speed_controls = this.control_panel.appendChild(document.createElement("span"));
+    speed_controls.style.margin = "30px";
+    this.key_triggered_button("-", ["o"], () => (this.speed_multiplier /= 1.2), undefined, undefined, undefined, speed_controls);
+    this.live_string((box) => {
+      box.textContent = "Speed: " + this.speed_multiplier.toFixed(2);
+    }, speed_controls);
+    this.key_triggered_button("+", ["p"], () => (this.speed_multiplier *= 1.2), undefined, undefined, undefined, speed_controls);
+    this.new_line();
+    this.key_triggered_button(
+      "Roll left",
+      [","],
+      () => (this.roll = 1),
+      undefined,
+      () => (this.roll = 0)
+    );
+    this.key_triggered_button(
+      "Roll right",
+      ["."],
+      () => (this.roll = -1),
+      undefined,
+      () => (this.roll = 0)
+    );
+    this.new_line();
+    this.key_triggered_button("(Un)freeze mouse look around", ["f"], () => (this.look_around_locked ^= 1), "#8B8885");
+    this.new_line();
+    this.key_triggered_button(
+      "Go to world origin",
+      ["r"],
+      () => {
+        this.matrix().set_identity(4, 4);
+        this.inverse().set_identity(4, 4);
+      },
+      "#8B8885"
+    );
+    this.new_line();
 
-      this.key_triggered_button(
-        "Look at origin from front",
-        ["1"],
-        () => {
-          this.inverse().set(
-            Mat4.look_at(vec3(0, 0, 10), vec3(0, 0, 0), vec3(0, 1, 0))
-          );
-          this.matrix().set(Mat4.inverse(this.inverse()));
-        },
-        "#8B8885"
-      );
-      this.new_line();
-      this.key_triggered_button(
-        "from right",
-        ["2"],
-        () => {
-          this.inverse().set(
-            Mat4.look_at(vec3(10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0))
-          );
-          this.matrix().set(Mat4.inverse(this.inverse()));
-        },
-        "#8B8885"
-      );
-      this.key_triggered_button(
-        "from rear",
-        ["3"],
-        () => {
-          this.inverse().set(
-            Mat4.look_at(vec3(0, 0, -10), vec3(0, 0, 0), vec3(0, 1, 0))
-          );
-          this.matrix().set(Mat4.inverse(this.inverse()));
-        },
-        "#8B8885"
-      );
-      this.key_triggered_button(
-        "from left",
-        ["4"],
-        () => {
-          this.inverse().set(
-            Mat4.look_at(vec3(-10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0))
-          );
-          this.matrix().set(Mat4.inverse(this.inverse()));
-        },
-        "#8B8885"
-      );
-      this.new_line();
-      this.key_triggered_button(
-        "Attach to global camera",
-        ["Shift", "R"],
-        () => {
-          this.will_take_over_graphics_state = true;
-        },
-        "#8B8885"
-      );
-      this.new_line();
-    }
+    this.key_triggered_button(
+      "Look at origin from front",
+      ["1"],
+      () => {
+        this.inverse().set(Mat4.look_at(vec3(0, 0, 10), vec3(0, 0, 0), vec3(0, 1, 0)));
+        this.matrix().set(Mat4.inverse(this.inverse()));
+      },
+      "#8B8885"
+    );
+    this.new_line();
+    this.key_triggered_button(
+      "from right",
+      ["2"],
+      () => {
+        this.inverse().set(Mat4.look_at(vec3(10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0)));
+        this.matrix().set(Mat4.inverse(this.inverse()));
+      },
+      "#8B8885"
+    );
+    this.key_triggered_button(
+      "from rear",
+      ["3"],
+      () => {
+        this.inverse().set(Mat4.look_at(vec3(0, 0, -10), vec3(0, 0, 0), vec3(0, 1, 0)));
+        this.matrix().set(Mat4.inverse(this.inverse()));
+      },
+      "#8B8885"
+    );
+    this.key_triggered_button(
+      "from left",
+      ["4"],
+      () => {
+        this.inverse().set(Mat4.look_at(vec3(-10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0)));
+        this.matrix().set(Mat4.inverse(this.inverse()));
+      },
+      "#8B8885"
+    );
+    this.new_line();
+    this.key_triggered_button(
+      "Attach to global camera",
+      ["Shift", "R"],
+      () => {
+        this.will_take_over_graphics_state = true;
+      },
+      "#8B8885"
+    );
+    this.new_line();
+  }
 
-    first_person_flyaround(radians_per_frame, meters_per_frame, leeway = 70) {
-      // (Internal helper function)
-      // Compare mouse's location to all four corners of a dead box:
-      const offsets_from_dead_box = {
-        plus: [
-          this.mouse.from_center[0] + leeway,
-          this.mouse.from_center[1] + leeway,
-        ],
-        minus: [
-          this.mouse.from_center[0] - leeway,
-          this.mouse.from_center[1] - leeway,
-        ],
-      };
-      // Apply a camera rotation movement, but only when the mouse is
-      // past a minimum distance (leeway) from the canvas's center:
-      if (!this.look_around_locked)
-        // If steering, steer according to "mouse_from_center" vector, but don't
-        // start increasing until outside a leeway window from the center.
-        for (let i = 0; i < 2; i++) {
-          // The &&'s in the next line might zero the vectors out:
-          let o = offsets_from_dead_box,
-            velocity =
-              ((o.minus[i] > 0 && o.minus[i]) || (o.plus[i] < 0 && o.plus[i])) *
-              radians_per_frame;
-          // On X step, rotate around Y axis, and vice versa.
-          this.matrix().post_multiply(Mat4.rotation(-velocity, i, 1 - i, 0));
-          this.inverse().pre_multiply(Mat4.rotation(+velocity, i, 1 - i, 0));
-        }
-      this.matrix().post_multiply(Mat4.rotation(-0.1 * this.roll, 0, 0, 1));
-      this.inverse().pre_multiply(Mat4.rotation(+0.1 * this.roll, 0, 0, 1));
-      // Now apply translation movement of the camera, in the newest local coordinate frame.
-      this.matrix().post_multiply(
-        Mat4.translation(...this.thrust.times(-meters_per_frame))
-      );
-      this.inverse().pre_multiply(
-        Mat4.translation(...this.thrust.times(+meters_per_frame))
-      );
-    }
-
-    third_person_arcball(radians_per_frame) {
-      // (Internal helper function)
-      // Spin the scene around a point on an axis determined by user mouse drag:
-      const dragging_vector = this.mouse.from_center.minus(this.mouse.anchor);
-      if (dragging_vector.norm() <= 0) return;
-      this.matrix().post_multiply(Mat4.translation(0, 0, -25));
-      this.inverse().pre_multiply(Mat4.translation(0, 0, +25));
-
-      const rotation = Mat4.rotation(
-        radians_per_frame * dragging_vector.norm(),
-        dragging_vector[1],
-        dragging_vector[0],
-        0
-      );
-      this.matrix().post_multiply(rotation);
-      this.inverse().pre_multiply(rotation);
-
-      this.matrix().post_multiply(Mat4.translation(0, 0, +25));
-      this.inverse().pre_multiply(Mat4.translation(0, 0, -25));
-    }
-
-    display(
-      context,
-      graphics_state,
-      dt = graphics_state.animation_delta_time / 1000
-    ) {
-      // The whole process of acting upon controls begins here.
-      const m = this.speed_multiplier * this.meters_per_frame,
-        r = this.speed_multiplier * this.radians_per_frame;
-
-      if (this.will_take_over_graphics_state) {
-        this.reset(graphics_state);
-        this.will_take_over_graphics_state = false;
+  first_person_flyaround(radians_per_frame, meters_per_frame, leeway = 70) {
+    // (Internal helper function)
+    // Compare mouse's location to all four corners of a dead box:
+    const offsets_from_dead_box = {
+      plus: [this.mouse.from_center[0] + leeway, this.mouse.from_center[1] + leeway],
+      minus: [this.mouse.from_center[0] - leeway, this.mouse.from_center[1] - leeway],
+    };
+    // Apply a camera rotation movement, but only when the mouse is
+    // past a minimum distance (leeway) from the canvas's center:
+    if (!this.look_around_locked)
+      // If steering, steer according to "mouse_from_center" vector, but don't
+      // start increasing until outside a leeway window from the center.
+      for (let i = 0; i < 2; i++) {
+        // The &&'s in the next line might zero the vectors out:
+        let o = offsets_from_dead_box,
+          velocity = ((o.minus[i] > 0 && o.minus[i]) || (o.plus[i] < 0 && o.plus[i])) * radians_per_frame;
+        // On X step, rotate around Y axis, and vice versa.
+        this.matrix().post_multiply(Mat4.rotation(-velocity, i, 1 - i, 0));
+        this.inverse().pre_multiply(Mat4.rotation(+velocity, i, 1 - i, 0));
       }
+    this.matrix().post_multiply(Mat4.rotation(-0.1 * this.roll, 0, 0, 1));
+    this.inverse().pre_multiply(Mat4.rotation(+0.1 * this.roll, 0, 0, 1));
+    // Now apply translation movement of the camera, in the newest local coordinate frame.
+    this.matrix().post_multiply(Mat4.translation(...this.thrust.times(-meters_per_frame)));
+    this.inverse().pre_multiply(Mat4.translation(...this.thrust.times(+meters_per_frame)));
+  }
 
-      if (!this.mouse_enabled_canvases.has(context.canvas)) {
-        this.add_mouse_controls(context.canvas);
-        this.mouse_enabled_canvases.add(context.canvas);
-      }
-      // Move in first-person.  Scale the normal camera aiming speed by dt for smoothness:
-      this.first_person_flyaround(dt * r, dt * m);
-      // Also apply third-person "arcball" camera mode if a mouse drag is occurring:
-      if (this.mouse.anchor) this.third_person_arcball(dt * r);
-      // Log some values:
-      this.pos = this.inverse().times(vec4(0, 0, 0, 1));
-      this.z_axis = this.inverse().times(vec4(0, 0, 1, 0));
-    }
-  });
+  third_person_arcball(radians_per_frame) {
+    // (Internal helper function)
+    // Spin the scene around a point on an axis determined by user mouse drag:
+    const dragging_vector = this.mouse.from_center.minus(this.mouse.anchor);
+    if (dragging_vector.norm() <= 0) return;
+    this.matrix().post_multiply(Mat4.translation(0, 0, -25));
+    this.inverse().pre_multiply(Mat4.translation(0, 0, +25));
 
-const Program_State_Viewer =
-  (defs.Program_State_Viewer = class Program_State_Viewer extends Scene {
-    // **Program_State_Viewer** just toggles, monitors, and reports some
-    // global values via its control panel.
-    make_control_panel() {
-      // display() of this scene will replace the following object:
-      this.program_state = {};
-      this.key_triggered_button(
-        "(Un)pause animation",
-        ["Alt", "a"],
-        () => (this.program_state.animate ^= 1)
-      );
+    const rotation = Mat4.rotation(radians_per_frame * dragging_vector.norm(), dragging_vector[1], dragging_vector[0], 0);
+    this.matrix().post_multiply(rotation);
+    this.inverse().pre_multiply(rotation);
+
+    this.matrix().post_multiply(Mat4.translation(0, 0, +25));
+    this.inverse().pre_multiply(Mat4.translation(0, 0, -25));
+  }
+
+  display(context, graphics_state, dt = graphics_state.animation_delta_time / 1000) {
+    // The whole process of acting upon controls begins here.
+    const m = this.speed_multiplier * this.meters_per_frame,
+      r = this.speed_multiplier * this.radians_per_frame;
+
+    if (this.will_take_over_graphics_state) {
+      this.reset(graphics_state);
+      this.will_take_over_graphics_state = false;
     }
 
-    display(context, program_state) {
-      this.program_state = program_state;
+    if (!this.mouse_enabled_canvases.has(context.canvas)) {
+      this.add_mouse_controls(context.canvas);
+      this.mouse_enabled_canvases.add(context.canvas);
     }
-  });
+    // Move in first-person.  Scale the normal camera aiming speed by dt for smoothness:
+    this.first_person_flyaround(dt * r, dt * m);
+    // Also apply third-person "arcball" camera mode if a mouse drag is occurring:
+    if (this.mouse.anchor) this.third_person_arcball(dt * r);
+    // Log some values:
+    this.pos = this.inverse().times(vec4(0, 0, 0, 1));
+    this.z_axis = this.inverse().times(vec4(0, 0, 1, 0));
+  }
+});
+
+const Program_State_Viewer = (defs.Program_State_Viewer = class Program_State_Viewer extends Scene {
+  // **Program_State_Viewer** just toggles, monitors, and reports some
+  // global values via its control panel.
+  make_control_panel() {
+    // display() of this scene will replace the following object:
+    this.program_state = {};
+    this.key_triggered_button("(Un)pause animation", ["Alt", "a"], () => (this.program_state.animate ^= 1));
+  }
+
+  display(context, program_state) {
+    this.program_state = program_state;
+  }
+});
