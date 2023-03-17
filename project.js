@@ -7,7 +7,6 @@ export class Project extends Scene {
   constructor() {
     // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
     super();
-    this.trainspeed = 1;
     let polyres = 24; // how detailed shapes are
     // At the beginning of our program, load one of each of these shape definitions onto the GPU.
     this.shapes = {
@@ -80,6 +79,7 @@ export class Project extends Scene {
       let randomInt = this.generateNoisySineWave(1, 1, 0.1);
       this.noisySineList.push(randomInt);
     }
+	this.speed = 3;
   }
 
   generateNoisySineWave(frequency, amplitude, noiseFactor) {
@@ -102,11 +102,11 @@ export class Project extends Scene {
   make_control_panel() {
     // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
     this.key_triggered_button("Increase Train Speed", ["t"], () => {
-      this.trainspeed += 1;
+      this.speed += 1;
     });
     this.new_line();
     this.key_triggered_button("Decrease Train Speed", ["g"], () => {
-      this.trainspeed = this.trainspeed > 1 ? this.trainspeed - 1 : this.trainspeed;
+      this.speed = this.speed > 1 ? this.speed - 1 : this.speed;
     });
     // this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
     // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
@@ -296,7 +296,7 @@ export class Project extends Scene {
   }
 
   drawTrain(context, program_state, model_transform, amplitude, frequency, phase, t) {
-	model_transform = model_transform.times(Mat4.translation(2*t, -3, 0));
+	model_transform = model_transform.times(Mat4.translation(t, -3, 0));
 	let n = 6;
 	for(let i = 0; i < n; i++) {
 		const x = i * 8.1;
@@ -461,7 +461,7 @@ export class Project extends Scene {
 
     program_state.projection_transform = Mat4.perspective(Math.PI / 4, context.width / context.height, 0.1, 1000);
 
-    const t = program_state.animation_time / 1000,
+    const t = this.speed*program_state.animation_time / 1000,
       dt = program_state.animation_delta_time / 1000;
     const yellow = hex_color("#fac91a");
     let model_transform = Mat4.identity();
