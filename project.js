@@ -377,15 +377,6 @@ export class Project extends Scene {
     }
   }
 
-  draw_railroad(context, program_state, model_transform, t) {
-	let base = model_transform;
-	for(let i = 0; i < 10; i++) {
-		model_transform = base;
-		model_transform = model_transform.times(Mat4.translation(i*4,0,this.generateSinusoidalPath(i*4, 4.5, 0.1, 0, 0)[1]));
-		this.draw_box(context, program_state, model_transform, t);
-	}
-  }
-
   draw_cloud(context, program_state, model_transform, t, j) {
     let modulation = Math.cos((Math.PI / 10) * t) / +2;
 
@@ -523,7 +514,6 @@ export class Project extends Scene {
 
     this.draw_clouds(context, program_state, model_transform, t);
 
-	this.draw_railroad(context, program_state, model_transform, t);
     //model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
     // this.shapes.axis.draw(
     //   context,
