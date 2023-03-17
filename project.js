@@ -37,6 +37,12 @@ export class Project extends Scene {
         specularity: 0.1,
         texture: new Texture("assets/shipping.jpeg", "NEAREST"),
       }),
+      cactus: new Material(new Texture_Rotate(), {
+        ambient: 1,
+        diffusivity: 0.1,
+        specularity: 0.1,
+        texture: new Texture("assets/cactus.png"),
+      }),
       pink: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
         diffusivity: 0.5,
@@ -87,7 +93,7 @@ export class Project extends Scene {
         diffusivity: 0.5,
         color: hex_color("#7b5c43"),
       }),
-	  tan: new Material(new defs.Phong_Shader(), {
+      tan: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
         diffusivity: 0.5,
         color: hex_color("#8C8AA8"),
@@ -97,12 +103,12 @@ export class Project extends Scene {
         diffusivity: 0.5,
         color: hex_color("#ffffff"),
       }),
-	  stone: new Material(new defs.Phong_Shader(), {
+      stone: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
         diffusivity: 0.5,
         color: hex_color("#636266"),
       }),
-	  rock: new Material(new defs.Phong_Shader(), {
+      rock: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
         diffusivity: 0.5,
         color: hex_color("#444346"),
@@ -159,6 +165,26 @@ export class Project extends Scene {
     this.key_triggered_button("Decrease Train Speed", ["g"], () => {
       this.speed = this.speed > 1 ? this.speed - 0.01 : this.speed;
     });
+    this.new_line();
+    this.key_triggered_button("Train View", ["Control", "1"], () => (this.attached = () => this.train_pov));
+  }
+
+  draw_cactus_big(context, program_state, model_transform, t) {
+    let base = model_transform;
+    model_transform = model_transform
+      .times(Mat4.translation(0, 10, 0))
+      .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+      .times(Mat4.scale(5, 5, 10));
+    model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.25, 0.25, 1));
+    this.shapes.trunk.draw(context, program_state, model_transform, this.materials.cactus);
+    base = base.times(Mat4.rotation(-Math.PI / 2, 1, 0, 0));
+    this.shapes.box.draw(context, program_state, base, this.materials.cactus);
+  }
+
+  draw_cactus_small(context, program_state, model_transform, t) {
+    model_transform = model_transform.times(Mat4.rotation(-Math.PI / 2, 1, 0, 0)).times(Mat4.scale(1.5, 1.5, 3));
+    model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.15, 0.15, 1));
+    this.shapes.trunk.draw(context, program_state, model_transform, this.materials.cactus);
   }
 
   draw_wheel(context, program_state, model_transform, t) {
@@ -295,9 +321,9 @@ export class Project extends Scene {
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(0.25, 0.25, 1));
     this.shapes.wheel.draw(context, program_state, model_transform, this.materials.red);
-	model_transform = base;
-	model_transform = model_transform.times(Mat4.translation(-4, 2.25, 0));
-	this.draw_smokestack(context, program_state, model_transform, t);
+    model_transform = base;
+    model_transform = model_transform.times(Mat4.translation(-4, 2.25, 0));
+    this.draw_smokestack(context, program_state, model_transform, t);
     model_transform = base;
     model_transform = model_transform.times(Mat4.translation(0, 1.5, 0)).times(Mat4.scale(1.2, 0.1, 1.1));
     this.draw_box(context, program_state, model_transform, t);
@@ -337,11 +363,11 @@ export class Project extends Scene {
       }
     }
   }
-  
-  draw_smokestack(context, program_state, model_transform, t) {
-	let modulation = 0.1 * Math.cos((Math.PI/5) * t) / + 2;
 
-    model_transform = model_transform.times(Mat4.translation(0, modulation*4, 0));
+  draw_smokestack(context, program_state, model_transform, t) {
+    let modulation = (0.1 * Math.cos((Math.PI / 5) * t)) / +2;
+
+    model_transform = model_transform.times(Mat4.translation(0, modulation * 4, 0));
     model_transform = model_transform.times(Mat4.scale(0.5, 0.5, 0.5));
 
     const smoke_shape_arr = new Map([
@@ -355,7 +381,7 @@ export class Project extends Scene {
     for (let i = 0; i < 5; i++) {
       smoke_shape_arr.get(i).draw(context, program_state, model_transform, this.materials.dark_white);
       model_transform = model_transform.times(Mat4.scale(1.15, 1.15, 1.15));
-      model_transform = model_transform.times(Mat4.translation(i**2/9, 0.6, 0));
+      model_transform = model_transform.times(Mat4.translation(i ** 2 / 9, 0.6, 0));
     }
   }
 
@@ -375,6 +401,10 @@ export class Project extends Scene {
         this.draw_boxcar(context, program_state, model_transform_with_orientation, t, i);
       }
     }
+    this.train_pov = model_transform
+      .times(Mat4.translation(-10, 5, -2))
+      .times(Mat4.rotation(-Math.PI / 2, 0, 1, 0))
+      .times(Mat4.rotation(-Math.PI / 8, 1, 0, 0));
   }
 
   draw_cloud(context, program_state, model_transform, t, j) {
@@ -499,6 +529,14 @@ export class Project extends Scene {
       program_state.set_camera(this.initial_camera_location);
     }
 
+    if (this.attached) {
+      const desired = Mat4.inverse(this.attached().times(Mat4.translation(0, 0, 5)));
+      const blend_factor = 0.97;
+      const current = desired.map((x, i) => Vector.from(program_state.camera_transform[i]).mix(x, blend_factor));
+      var state = this.attached() != this.initial_camera_location ? current : this.initial_camera_location;
+      program_state.set_camera(state);
+    }
+
     program_state.projection_transform = Mat4.perspective(Math.PI / 4, context.width / context.height, 0.1, 1000);
 
     const t = (this.speed * program_state.animation_time) / 1000,
@@ -520,8 +558,10 @@ export class Project extends Scene {
     // this.draw_boxcar(context, program_state, model_transform, t);
 
     //this.draw_train(context, program_state, model_transform, t);
-    //this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
+    // this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
     this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
+    // this.draw_cactus_big(context, program_state, model_transform, t);
+    // this.draw_cactus_small(context, program_state, model_transform, t);
 
     // this.draw_railroad(context, program_state, model_transform, t);
 
@@ -777,14 +817,7 @@ class Texture_Rotate extends Textured_Phong {
                 vec4 tex_color = texture2D( texture, v.xy );
 
                 float x = mod(v.x, 1.0), y = mod(v.y, 1.0);
-                if (x > 0.75 && x < 0.85 && y > 0.15 && y < 0.85)
-                    tex_color = vec4(0, 0, 0, 1);
-                if (x > 0.15 && x < 0.25 && y > 0.15 && y < 0.85)
-                    tex_color = vec4(0, 0, 0, 1);
-                if (x > 0.15 && x < 0.85 && y > 0.15 && y < 0.25)
-                    tex_color = vec4(0, 0, 0, 1);
-                if (x > 0.15 && x < 0.85 && y > 0.75 && y < 0.85)
-                    tex_color = vec4(0, 0, 0, 1);
+          
 
                 if( tex_color.w < .01 ) discard;
                                                                          // Compute an initial (ambient) color:
