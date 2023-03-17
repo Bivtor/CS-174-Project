@@ -65,6 +65,11 @@ export class Project extends Scene {
         diffusivity: 0.5,
         color: hex_color("#3E3D52"),
       }),
+      suncolor: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#fdfd96"),
+      }),
       wheelbrown: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
         diffusivity: 0.5,
@@ -445,7 +450,7 @@ export class Project extends Scene {
     this.train_pov = model_transform
       .times(Mat4.translation(-10, 5, -2))
       .times(Mat4.rotation(-Math.PI / 2, 0, 1, 0))
-      .times(Mat4.rotation(-Math.PI / 8, 1, 0, 0));
+      .times(Mat4.rotation(-Math.PI / 11, 1, 0, 0));
   }
 
   draw_cloud(context, program_state, model_transform, t, j) {
@@ -577,10 +582,18 @@ export class Project extends Scene {
 
   draw_ground(context, program_state, model_transform, t) {
     model_transform = model_transform
-      .times(Mat4.translation(0, -5, 0))
+      .times(Mat4.translation(-430, -5, 0))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(1000, 1000, 1000));
     this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand.override({ color: this.modulate_color_ground(t) }));
+  }
+
+  draw_sun(context, program_state, model_transform, t) {
+    model_transform = model_transform
+      .times(Mat4.scale(80, 80, 80))
+      .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+      .times(Mat4.translation(0, 0, 7));
+    this.shapes.disc.draw(context, program_state, model_transform, this.materials.suncolor);
   }
 
   draw_ground_desert(context, program_state, model_transform, t) {
@@ -632,27 +645,27 @@ export class Project extends Scene {
     // this.draw_box(context, program_state, model_transform, t);
     // this.draw_wheel(context, program_state, model_transform, t);
     // this.draw_boxcar(context, program_state, model_transform, t);
+    // this.draw_cactus_big(context, program_state, model_transform, t);
 
-    //this.draw_train(context, program_state, model_transform, t);
     // this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
     this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
     // model_transform = model_transform.times(Mat4.translation(3, 0, 0));
 
-    // this.draw_cactus_big(context, program_state, model_transform, t);
-
+    this.draw_sun(context, program_state, model_transform, t);
     // if (this.terrain == "mountain") {
+	  model_transform = model_transform.times(Mat4.translation(0, -0.2, 0));
       this.draw_ground(context, program_state, model_transform, t);
       this.draw_mountain_range(context, program_state, model_transform, t);
       this.draw_trees(context, program_state, model_transform, t);
     // } else {
-	  model_transform = model_transform.times(Mat4.translation(-1100, 0.1, 0));
+	  model_transform = base;
+	  model_transform = model_transform.times(Mat4.translation(-1100, 0.2, 0));
       this.draw_ground_desert(context, program_state, model_transform, t);
 	  model_transform = base;
 	  model_transform = model_transform.times(Mat4.translation(-270, 0, 0));
       this.draw_desert(context, program_state, model_transform, t);
     // }
-	model_transform = base;
-	model_transform = model_transform.times(Mat4.translation(-70, 0, 0));
+	model_transform = model_transform.times(Mat4.translation(30, 0, 0));
     this.draw_clouds(context, program_state, model_transform, t);
 
     //model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
