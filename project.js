@@ -35,7 +35,7 @@ export class Project extends Scene {
         polyres / 2
       ),
       disc_low_poly: new defs.Regular_2D_Polygon(polyres / 2, polyres / 2),
-      circleoutline: new defs.circleoutline(polyres, polyres),
+      circleoutline: new defs.circleoutline(8 * polyres, 8 * polyres),
       disc: new defs.Regular_2D_Polygon(3 * polyres, 3 * polyres),
       mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(
         polyres / 4,
@@ -148,7 +148,7 @@ export class Project extends Scene {
   draw_wheel(context, program_state, model_transform, t) {
     model_transform = model_transform
       .times(Mat4.scale(0.5, 0.5, 0.25))
-      .times(Mat4.rotation(t / 1.5, 0, 0, 1));
+      .times(Mat4.rotation(-t / 1.5, 0, 0, 1));
     this.shapes.wheel.draw(
       context,
       program_state,
@@ -205,7 +205,7 @@ export class Project extends Scene {
   }
 
   draw_box(context, program_state, model_transform, t) {
-    this.shapes.box.draw(
+	this.shapes.box.draw(
       context,
       program_state,
       model_transform,
@@ -293,7 +293,7 @@ export class Project extends Scene {
       this.draw_box(context, program_state, model_transform, t);
       model_transform = model_transform
         .times(Mat4.translation(0, -1, 0))
-        .times(Mat4.scale(1.1, 0.5, 0.5));
+        .times(Mat4.scale(1.15, 0.5, 0.3));
       this.draw_box(context, program_state, model_transform, t);
     } else {
       // roof
@@ -309,7 +309,7 @@ export class Project extends Scene {
       // links
       model_transform = model_transform
         .times(Mat4.translation(0, -1, 0))
-        .times(Mat4.scale(1.1, 0.1, 0.5));
+        .times(Mat4.scale(1.15, 0.1, 0.3));
       this.draw_box(context, program_state, model_transform, t);
     }
     // wheels
@@ -330,7 +330,7 @@ export class Project extends Scene {
     // links
     model_transform = model_transform
       .times(Mat4.translation(2.75, -1.25, 0))
-      .times(Mat4.scale(1.75, 0.1, 0.25));
+      .times(Mat4.scale(2.75, 0.1, 0.25));
     this.draw_box(context, program_state, model_transform, t);
     // wheels
     model_transform = base;
@@ -395,13 +395,35 @@ export class Project extends Scene {
     this.draw_wheel_base(context, program_state, model_transform, t, 1);
   }
 
-  draw_train(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.translation(-1.1 * t, -3, 0));
-    this.draw_locomotive(context, program_state, model_transform, t);
-    for (let i = 0; i < 5; i++) {
-      model_transform = model_transform.times(Mat4.translation(8.8, 0, 0));
-      this.draw_boxcar(context, program_state, model_transform, t, i);
-    }
+  generateSinusoidalPath(x, amplitude, frequency, phase, t) {
+	const z = amplitude * Math.sin(frequency * x + phase + t/5);
+	return [x, z];
+  }
+
+  calculateTangentAngle(x, amplitude, frequency, phase, t) {
+	const dx = 1;
+	const [x1, z1] = this.generateSinusoidalPath(x, amplitude, frequency, phase, t);
+	const [x2, z2] = this.generateSinusoidalPath(x + dx, amplitude, frequency, phase, t);
+	return Math.atan2(z2 - z1, dx);
+  }
+
+  drawTrain(context, program_state, model_transform, amplitude, frequency, phase, t) {
+	model_transform = model_transform.times(Mat4.translation(2*t, -3, 0));
+	let n = 6;
+	for(let i = 0; i < n; i++) {
+		const x = i * 8.1;
+		const [x_pos, z_pos] = this.generateSinusoidalPath(x, amplitude, frequency, phase, t);
+		const tangent_angle = this.calculateTangentAngle(x, amplitude, frequency, phase, t);
+		const model_transform_with_position = model_transform.times(Mat4.translation(x_pos, 0, z_pos));
+		const model_transform_with_orientation = model_transform_with_position.times(Mat4.rotation(-tangent_angle, 0, 1, 0));
+		
+		if(i == 0) {
+			this.draw_locomotive(context, program_state, model_transform_with_orientation, t);
+		}
+		else {
+			this.draw_boxcar(context, program_state, model_transform_with_orientation, t, i);		
+		}
+	}
   }
 
   draw_cloud(context, program_state, model_transform, t, j) {
@@ -688,22 +710,26 @@ export class Project extends Scene {
     // this.draw_box(context, program_state, model_transform, t);
     // this.draw_wheel(context, program_state, model_transform, t);
     // this.draw_boxcar(context, program_state, model_transform, t);
-    this.draw_train(context, program_state, model_transform, t);
-    this.draw_railroad(context, program_state, model_transform, t);
+    
+	
+	//this.draw_train(context, program_state, model_transform, t);
+	//this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
+	this.drawTrain(context, program_state, model_transform, 5, 0.1, 0, -t);
+
+	// this.draw_railroad(context, program_state, model_transform, t);
 
     this.draw_trees(context, program_state, model_transform, t);
     this.draw_mountain_range(context, program_state, model_transform, t);
 
     this.draw_clouds(context, program_state, model_transform, t);
-    //this.draw_empty_box(context, program_state, model_transform, t);
 
-    model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
-    this.shapes.axis.draw(
-      context,
-      program_state,
-      model_transform,
-      this.materials.pink
-    );
+    //model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
+    // this.shapes.axis.draw(
+    //   context,
+    //   program_state,
+    //   model_transform,
+    //   this.materials.pink
+    // );
   }
 }
 

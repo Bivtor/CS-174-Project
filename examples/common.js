@@ -1344,14 +1344,14 @@ const Movement_Controls =
       this.new_line();
       this.key_triggered_button(
         "Roll left",
-        [","],
+        ["e"],
         () => (this.roll = 1),
         undefined,
         () => (this.roll = 0)
       );
       this.key_triggered_button(
         "Roll right",
-        ["."],
+        ["q"],
         () => (this.roll = -1),
         undefined,
         () => (this.roll = 0)
