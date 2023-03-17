@@ -22,7 +22,10 @@ export class Project extends Scene {
       mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
       leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
       trunk: new defs.Cylindrical_Tube(polyres / 6, polyres / 6),
-      sphere_low_poly: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
+      sphere_low_poly: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1),
+      sphere_low_poly2: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
+      sphere_low_poly3: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(3),
+      sphere_low_poly4: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(4),
     };
 
     // *** Materials
@@ -102,7 +105,7 @@ export class Project extends Scene {
   make_control_panel() {
     // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
     this.key_triggered_button("Increase Train Speed", ["t"], () => {
-      this.trainspeed += 1;
+      this.trainspeed = this.trainspeed + 1;
     });
     this.new_line();
     this.key_triggered_button("Decrease Train Speed", ["g"], () => {
@@ -261,11 +264,30 @@ export class Project extends Scene {
   }
 
   draw_train(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.translation(-1.1 * this.get_train_speed(t), -3, 0));
+    model_transform = model_transform.times(Mat4.translation(-1.1 * t * this.get_train_speed(t), -3, 0));
     this.draw_locomotive(context, program_state, model_transform, t);
+    this.draw_smokestack(context, program_state, model_transform, t);
     for (let i = 0; i < 5; i++) {
       model_transform = model_transform.times(Mat4.translation(8.8, 0, 0));
       this.draw_boxcar(context, program_state, model_transform, t, i);
+    }
+  }
+  draw_smokestack(context, program_state, model_transform, t) {
+    model_transform = model_transform.times(Mat4.translation(0, 4, 0));
+    model_transform = model_transform.times(Mat4.scale(0.8, 0.8, 0.8));
+
+    const smoke_shape_arr = new Map([
+      [0, this.shapes.sphere_low_poly],
+      [1, this.shapes.sphere_low_poly2],
+      [2, this.shapes.sphere_low_poly2],
+      [3, this.shapes.sphere_low_poly3],
+      [4, this.shapes.sphere_low_poly4],
+    ]);
+
+    for (let i = 0; i < 5; i++) {
+      smoke_shape_arr.get(i).draw(context, program_state, model_transform, this.materials.dark_white);
+      model_transform = model_transform.times(Mat4.scale(1.15, 1.15, 1.15));
+      model_transform = model_transform.times(Mat4.translation(0, 3, 0));
     }
   }
 
@@ -401,8 +423,7 @@ export class Project extends Scene {
   }
 
   get_train_speed(t) {
-    console.log(this.trainspeed);
-    return this.trainspeed > 1 ? this.trainspeed : t;
+    return this.trainspeed > 1 ? this.trainspeed : 1;
   }
 
   display(context, program_state) {
