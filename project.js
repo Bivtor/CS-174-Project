@@ -17,10 +17,10 @@ export class Project extends Scene {
       axis: new defs.Axis_Arrows(),
       box: new defs.Cube(),
       plane: new defs.Regular_2D_Polygon(polyres, polyres),
-      wheel: new defs.Cylindrical_Tube(2 * polyres, 2 * polyres),
+      wheel: new defs.Cylindrical_Tube(polyres, polyres),
       engine: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())(polyres / 2, polyres / 2),
       disc_low_poly: new defs.Regular_2D_Polygon(polyres / 2, polyres / 2),
-      disc: new defs.Regular_2D_Polygon(3 * polyres, 3 * polyres),
+      disc: new defs.Regular_2D_Polygon(2 * polyres, 2 * polyres),
       mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
       leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
       trunk: new defs.Cylindrical_Tube(polyres / 6, polyres / 6),
@@ -181,13 +181,14 @@ export class Project extends Scene {
       }
     });
     this.new_line();
-    this.key_triggered_button("Change Terrain", ["Control", "5"], () => {
-      this.terrain = this.terrain == "mountain" ? "desert" : "mountain";
-    });
+    // this.key_triggered_button("Change Terrain", ["Control", "5"], () => {
+    //   this.terrain = this.terrain == "mountain" ? "desert" : "mountain";
+    // });
   }
 
   draw_cactus_big(context, program_state, model_transform, t, r) {
     let base = model_transform;
+	model_transform = model_transform.times(Mat4.rotation((r+25)/5, 0, 1, 0));
     model_transform = model_transform
       .times(Mat4.translation(0, 10, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
@@ -196,6 +197,7 @@ export class Project extends Scene {
     //draw trunk
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.cactus);
     let base2 = base;
+	base = base.times(Mat4.rotation((r+25)/5, 0, 1, 0));
     base = base
       .times(Mat4.rotation(Math.PI / 4, 0, 1, 0))
       .times(Mat4.translation(2, -3, 0))
@@ -206,6 +208,7 @@ export class Project extends Scene {
     base = base.times(Mat4.translation(0.8, 1, 0)).times(Mat4.scale(0.2, 2, 1));
     this.shapes.box.draw(context, program_state, base, this.materials.cactus);
 
+	base2 = base2.times(Mat4.rotation((r+25)/5, 0, 1, 0));
     base2 = base2
       .times(Mat4.rotation(Math.PI / 4, 0, 1, 0))
       .times(Mat4.translation(-2, -3, 0))
@@ -460,9 +463,9 @@ export class Project extends Scene {
     model_transform = model_transform.times(Mat4.translation(1, 40, 1));
     let base = model_transform;
     let j = 0;
-    for (let i = 0; i < this.randomList.length / 10; i += 3) {
+    for (let i = 0; i < this.randomList.length / 9; i += 3) {
       model_transform = base;
-      model_transform = model_transform.times(Mat4.translation(6 * this.randomList[i], this.randomList[i + 1] / 10, 6 * this.randomList[i + 2])).times(Mat4.scale(this.randomList_pos[i] / 8, this.randomList_pos[i] / 10, this.randomList_pos[i] / 10));
+      model_transform = model_transform.times(Mat4.translation(13 * this.randomList[i], this.randomList[i + 1] / 10, 6 * this.randomList[i + 2])).times(Mat4.scale(this.randomList_pos[i] / 8, this.randomList_pos[i] / 10, this.randomList_pos[i] / 10));
       this.draw_cloud(context, program_state, model_transform, t, j);
       j += 3;
     }
@@ -510,7 +513,7 @@ export class Project extends Scene {
     for (let i = 1; i < this.randomList.length - 2; i += 2) {
       model_transform = base;
       model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 30)));
-      if (i % 4 == 0) {
+      if ((i-1) % 4 == 0) {
         this.draw_tree_small(context, program_state, model_transform, t, this.randomList[i]);
       } else {
         this.draw_tree_big(context, program_state, model_transform, t, this.randomList[i]);
@@ -544,7 +547,7 @@ export class Project extends Scene {
 
   draw_desert(context, program_state, model_transform, t) {
     let base = model_transform;
-    for (let i = 0; i < this.randomList.length - 2; i += 2) {
+    for (let i = 0; i < this.randomList.length / 3 - 2; i += 2) {
       model_transform = base;
       model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 30)));
       if (i % 4 == 0) {
@@ -553,10 +556,10 @@ export class Project extends Scene {
         this.draw_cactus_big(context, program_state, model_transform, t, this.randomList[i]);
       }
     }
-    for (let i = 1; i < this.randomList.length - 2; i += 2) {
+    for (let i = 1; i < this.randomList.length / 3 - 2; i += 2) {
       model_transform = base;
       model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 30)));
-      if (i % 4 == 0) {
+      if ((i-1) % 4 == 0) {
         this.draw_cactus_small(context, program_state, model_transform, t, this.randomList[i]);
       } else {
         this.draw_cactus_big(context, program_state, model_transform, t, this.randomList[i]);
@@ -637,15 +640,19 @@ export class Project extends Scene {
 
     // this.draw_cactus_big(context, program_state, model_transform, t);
 
-    if (this.terrain == "mountain") {
+    // if (this.terrain == "mountain") {
       this.draw_ground(context, program_state, model_transform, t);
       this.draw_mountain_range(context, program_state, model_transform, t);
       this.draw_trees(context, program_state, model_transform, t);
-    } else {
+    // } else {
+	  model_transform = model_transform.times(Mat4.translation(-1100, 0.1, 0));
       this.draw_ground_desert(context, program_state, model_transform, t);
+	  model_transform = base;
+	  model_transform = model_transform.times(Mat4.translation(-270, 0, 0));
       this.draw_desert(context, program_state, model_transform, t);
-    }
-
+    // }
+	model_transform = base;
+	model_transform = model_transform.times(Mat4.translation(-70, 0, 0));
     this.draw_clouds(context, program_state, model_transform, t);
 
     //model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
