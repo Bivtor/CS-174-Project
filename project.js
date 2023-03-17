@@ -659,7 +659,7 @@ export class Project extends Scene {
       this.draw_trees(context, program_state, model_transform, t);
     // } else {
 	  model_transform = base;
-	  model_transform = model_transform.times(Mat4.translation(-1100, 0.2, 0));
+	  model_transform = model_transform.times(Mat4.translation(-1100, 0.1, 0));
       this.draw_ground_desert(context, program_state, model_transform, t);
 	  model_transform = base;
 	  model_transform = model_transform.times(Mat4.translation(-270, 0, 0));
