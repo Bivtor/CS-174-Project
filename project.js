@@ -16,7 +16,6 @@ export class Project extends Scene {
       wheel: new defs.Cylindrical_Tube(2 * polyres, 2 * polyres),
       engine: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())(polyres / 2, polyres / 2),
       disc_low_poly: new defs.Regular_2D_Polygon(polyres / 2, polyres / 2),
-      circleoutline: new defs.circleoutline(8 * polyres, 8 * polyres),
       disc: new defs.Regular_2D_Polygon(3 * polyres, 3 * polyres),
       mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
       leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
@@ -418,44 +417,6 @@ export class Project extends Scene {
       this.draw_mountain(context, program_state, model_transform, t, this.randomList[i]);
     }
   }
-  //TODO Rails
-  draw_rail(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.rotation(Math.PI / 2, 1, 0, 0)).times(Mat4.scale(150, 150, 150));
-
-    this.shapes.circleoutline.draw(context, program_state, model_transform, this.materials.purple);
-  }
-
-  draw_rail_tie(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.scale(0.05, 0.08, 0.5));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
-  }
-  draw_rail_ties(context, program_state, model_transform, t) {
-    //Move to correct location
-    model_transform = model_transform.times(Mat4.translation(0, 0, -10));
-    for (var i = 0; i < 100; i += 10) {
-      model_transform = model_transform
-        // .times(Mat4.rotation(i, 0, 1, 0))
-        .times(Mat4.translation(-1, 0, -1));
-      this.draw_rail_tie(context, program_state, model_transform, t);
-    }
-  }
-
-  draw_railroad(context, program_state, model_transform, t) {
-    //Touch the ground
-    model_transform = model_transform.times(Mat4.translation(0, -5, 0));
-
-    //Draw railroad crossties
-    this.draw_rail_ties(context, program_state, model_transform, t);
-
-    //Draw rails
-    this.draw_rail(context, program_state, model_transform, t);
-    model_transform = model_transform.times(Mat4.scale(1.02, 1, 1.02));
-    this.draw_rail(context, program_state, model_transform, t);
-  }
-
-//   drawRailroad(context, program_state, model_transform, t) {
-
-//   }
 
   draw_ground(context, program_state, model_transform, t) {
     model_transform = model_transform
