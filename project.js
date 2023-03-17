@@ -39,8 +39,8 @@ export class Project extends Scene {
       }),
       cactus: new Material(new Texture_Rotate(), {
         ambient: 1,
-        diffusivity: 0.1,
-        specularity: 0.1,
+        diffusivity: 0.,
+        specularity: 1.,
         texture: new Texture("assets/cactus.png"),
       }),
       pink: new Material(new defs.Phong_Shader(), {
@@ -81,7 +81,7 @@ export class Project extends Scene {
       sand: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
         diffusivity: 0.5,
-        color: hex_color("#d0dd97"),
+        color: hex_color("#dddd87"),
       }),
       green: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
@@ -137,6 +137,7 @@ export class Project extends Scene {
       this.noisySineList.push(randomInt);
     }
     this.speed = 3;
+	this.fov = 4;
   }
 
   generateNoisySineWave(frequency, amplitude, noiseFactor) {
@@ -167,6 +168,15 @@ export class Project extends Scene {
     });
     this.new_line();
     this.key_triggered_button("Train View", ["Control", "1"], () => (this.attached = () => this.train_pov));
+	this.new_line();
+    this.key_triggered_button("Zoom In", ["Control", "2"], () => {
+		this.fov += 2;
+	});
+	this.key_triggered_button("Zoom Out", ["Control", "3"], () => {
+		if(this.fov > 2) {
+			this.fov -= 2;
+		}
+	});
   }
 
   draw_cactus_big(context, program_state, model_transform, t) {
@@ -183,7 +193,7 @@ export class Project extends Scene {
 
   draw_cactus_small(context, program_state, model_transform, t) {
     model_transform = model_transform.times(Mat4.rotation(-Math.PI / 2, 1, 0, 0)).times(Mat4.scale(1.5, 1.5, 3));
-    model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.15, 0.15, 1));
+    model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.3, 0.3, 1));
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.cactus);
   }
 
@@ -520,6 +530,15 @@ export class Project extends Scene {
     this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand.override({color: this.modulate_color_ground(t)}));
   }
 
+  draw_ground_desert(context, program_state, model_transform, t) {
+    model_transform = model_transform
+      .times(Mat4.translation(0, -5, 0))
+      .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
+	  .times(Mat4.rotation(1, 0, 0, 1))
+      .times(Mat4.scale(1000, 1000, 1000));
+    this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand);
+  }
+
   display(context, program_state) {
     // display():  Called once per frame of animation.
     // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
@@ -537,7 +556,8 @@ export class Project extends Scene {
       program_state.set_camera(state);
     }
 
-    program_state.projection_transform = Mat4.perspective(Math.PI / 4, context.width / context.height, 0.1, 1000);
+	// higher = narrower
+    program_state.projection_transform = Mat4.perspective(Math.PI / this.fov, context.width / context.height, 0.1, 1000);
 
     const t = (this.speed * program_state.animation_time) / 1000,
       dt = program_state.animation_delta_time / 1000;
@@ -549,9 +569,14 @@ export class Project extends Scene {
 
     this.move = false;
 
+	let base = model_transform;
+
     // ground
     this.draw_ground(context, program_state, model_transform, t);
+	model_transform = model_transform.times(Mat4.translation(-1100, 0.1, 0));
+	this.draw_ground_desert(context, program_state, model_transform, t);
 
+	model_transform = base;
     // objects
     // this.draw_box(context, program_state, model_transform, t);
     // this.draw_wheel(context, program_state, model_transform, t);
@@ -560,8 +585,9 @@ export class Project extends Scene {
     //this.draw_train(context, program_state, model_transform, t);
     // this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
     this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
-    // this.draw_cactus_big(context, program_state, model_transform, t);
-    // this.draw_cactus_small(context, program_state, model_transform, t);
+    this.draw_cactus_big(context, program_state, model_transform, t);
+	model_transform = model_transform.times(Mat4.translation(3, 0, 0));
+    this.draw_cactus_small(context, program_state, model_transform, t);
 
     // this.draw_railroad(context, program_state, model_transform, t);
 
