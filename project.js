@@ -186,19 +186,36 @@ export class Project extends Scene {
     });
   }
 
-  draw_cactus_big(context, program_state, model_transform, t) {
+  draw_cactus_big(context, program_state, model_transform, t, r) {
     let base = model_transform;
     model_transform = model_transform
       .times(Mat4.translation(0, 10, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(5, 5, 10));
     model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.25, 0.25, 1));
+    //draw trunk
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.cactus);
+    let base2 = base;
     base = base
-      .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-      .times(Mat4.scale(0.4, 0.4, 0.4))
-      .times(Mat4.scale(1, 1, 1));
+      .times(Mat4.rotation(Math.PI / 4, 0, 1, 0))
+      .times(Mat4.translation(2, -3, 0))
+      .times(Mat4.scale(2, 0.6, 0.6));
+
+    // draw cactus arm 1
     this.shapes.box.draw(context, program_state, base, this.materials.cactus);
+    base = base.times(Mat4.translation(0.8, 1, 0)).times(Mat4.scale(0.2, 2, 1));
+    this.shapes.box.draw(context, program_state, base, this.materials.cactus);
+
+    base2 = base2
+      .times(Mat4.rotation(Math.PI / 4, 0, 1, 0))
+      .times(Mat4.translation(-2, -3, 0))
+      .times(Mat4.scale(2, 0.6, 0.6));
+
+    this.shapes.box.draw(context, program_state, base2, this.materials.cactus);
+
+    base2 = base2.times(Mat4.translation(-0.8, 1, 0)).times(Mat4.scale(0.2, 2, 1));
+
+    this.shapes.box.draw(context, program_state, base2, this.materials.cactus);
   }
 
   draw_cactus_small(context, program_state, model_transform, t) {
@@ -616,9 +633,9 @@ export class Project extends Scene {
     //this.draw_train(context, program_state, model_transform, t);
     // this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
     this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
-    model_transform = model_transform.times(Mat4.translation(3, 0, 0));
+    // model_transform = model_transform.times(Mat4.translation(3, 0, 0));
 
-    // this.draw_railroad(context, program_state, model_transform, t);
+    // this.draw_cactus_big(context, program_state, model_transform, t);
 
     if (this.terrain == "mountain") {
       this.draw_ground(context, program_state, model_transform, t);
