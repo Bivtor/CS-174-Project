@@ -170,17 +170,18 @@ export class Project extends Scene {
     });
     this.new_line();
     this.key_triggered_button("Train View", ["Control", "1"], () => (this.attached = () => this.train_pov));
+    this.key_triggered_button("Train POV", ["Control", "2"], () => (this.attached = () => this.train_pov_engine));
     this.new_line();
-    this.key_triggered_button("Zoom In", ["Control", "2"], () => {
+    this.key_triggered_button("Zoom In", ["Control", "3"], () => {
       this.fov += 2;
     });
-    this.key_triggered_button("Zoom Out", ["Control", "3"], () => {
+    this.key_triggered_button("Zoom Out", ["Control", "4"], () => {
       if (this.fov > 2) {
         this.fov -= 2;
       }
     });
     this.new_line();
-    this.key_triggered_button("Change Terrain", ["Control", "4"], () => {
+    this.key_triggered_button("Change Terrain", ["Control", "5"], () => {
       this.terrain = this.terrain == "mountain" ? "desert" : "mountain";
     });
   }
@@ -193,8 +194,11 @@ export class Project extends Scene {
       .times(Mat4.scale(5, 5, 10));
     model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.25, 0.25, 1));
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.cactus);
-    base = base.times(Mat4.rotation(-Math.PI / 2, 1, 0, 0));
-    // this.shapes.box.draw(context, program_state, base, this.materials.cactus);
+    base = base
+      .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+      .times(Mat4.scale(0.4, 0.4, 0.4))
+      .times(Mat4.scale(1, 1, 1));
+    this.shapes.box.draw(context, program_state, base, this.materials.cactus);
   }
 
   draw_cactus_small(context, program_state, model_transform, t) {
@@ -316,6 +320,7 @@ export class Project extends Scene {
 
     // engine
     model_transform = base;
+    this.train_pov_engine = base.times(Mat4.translation(-8, 0, 4)).times(Mat4.rotation(Math.PI / 2, 0, 1, 0));
     base = base.times(Mat4.translation(-0.5, 0, 0));
     model_transform = base;
     model_transform = model_transform.times(Mat4.translation(0, 0.25, 0)).times(Mat4.scale(1, 1.2, 1));
