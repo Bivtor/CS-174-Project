@@ -245,6 +245,7 @@ export class Project extends Scene {
   }
 
   draw_locomotive(context, program_state, model_transform, t) {
+    this.draw_smokestack(context, program_state, model_transform, t);
     let base = model_transform;
     model_transform = model_transform.times(Mat4.translation(2.75, -0.9, 0)).times(Mat4.scale(0.35, 0.5, 1));
     this.draw_empty_box(context, program_state, model_transform, t);
@@ -303,23 +304,6 @@ export class Project extends Scene {
     return Math.atan2(z2 - z1, dx);
   }
 
-  drawTrain(context, program_state, model_transform, amplitude, frequency, phase, t) {
-    model_transform = model_transform.times(Mat4.translation(t, -3, 0));
-    let n = 6;
-    for (let i = 0; i < n; i++) {
-      const x = i * 8.1;
-      const [x_pos, z_pos] = this.generateSinusoidalPath(x, amplitude, frequency, phase, t);
-      const tangent_angle = this.calculateTangentAngle(x, amplitude, frequency, phase, t);
-      const model_transform_with_position = model_transform.times(Mat4.translation(x_pos, 0, z_pos));
-      const model_transform_with_orientation = model_transform_with_position.times(Mat4.rotation(-tangent_angle, 0, 1, 0));
-
-      if (i == 0) {
-        this.draw_locomotive(context, program_state, model_transform_with_orientation, t);
-      } else {
-        this.draw_boxcar(context, program_state, model_transform_with_orientation, t, i);
-      }
-    }
-  }
   draw_smokestack(context, program_state, model_transform, t) {
     model_transform = model_transform.times(Mat4.translation(0, 4, 0));
     model_transform = model_transform.times(Mat4.scale(0.8, 0.8, 0.8));
@@ -336,6 +320,24 @@ export class Project extends Scene {
       smoke_shape_arr.get(i).draw(context, program_state, model_transform, this.materials.dark_white);
       model_transform = model_transform.times(Mat4.scale(1.15, 1.15, 1.15));
       model_transform = model_transform.times(Mat4.translation(0, 3, 0));
+    }
+  }
+
+  drawTrain(context, program_state, model_transform, amplitude, frequency, phase, t) {
+    model_transform = model_transform.times(Mat4.translation(t, -3, 0));
+    let n = 6;
+    for (let i = 0; i < n; i++) {
+      const x = i * 8.1;
+      const [x_pos, z_pos] = this.generateSinusoidalPath(x, amplitude, frequency, phase, t);
+      const tangent_angle = this.calculateTangentAngle(x, amplitude, frequency, phase, t);
+      const model_transform_with_position = model_transform.times(Mat4.translation(x_pos, 0, z_pos));
+      const model_transform_with_orientation = model_transform_with_position.times(Mat4.rotation(-tangent_angle, 0, 1, 0));
+
+      if (i == 0) {
+        this.draw_locomotive(context, program_state, model_transform_with_orientation, t);
+      } else {
+        this.draw_boxcar(context, program_state, model_transform_with_orientation, t, i);
+      }
     }
   }
 
