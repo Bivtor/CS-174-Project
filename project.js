@@ -16,7 +16,6 @@ export class Project extends Scene {
       wheel: new defs.Cylindrical_Tube(2 * polyres, 2 * polyres),
       engine: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())(polyres / 2, polyres / 2),
       disc_low_poly: new defs.Regular_2D_Polygon(polyres / 2, polyres / 2),
-      circleoutline: new defs.circleoutline(8 * polyres, 8 * polyres),
       disc: new defs.Regular_2D_Polygon(3 * polyres, 3 * polyres),
       mountain: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
       leaves: new (defs.Cone_Tip.prototype.make_flat_shaded_version())(polyres / 4, polyres / 4),
@@ -33,6 +32,11 @@ export class Project extends Scene {
         ambient: 1.0,
         diffusivity: 0.5,
         color: hex_color("#f7cac9"),
+      }),
+      black: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#000000"),
       }),
       purple: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
@@ -165,23 +169,23 @@ export class Project extends Scene {
   draw_empty_box(context, program_state, model_transform, t) {
     let base = model_transform;
     model_transform = model_transform.times(Mat4.scale(4, 0.1, 1));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(0, 0.9, -0.9))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(4, 0.1, 1));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
     model_transform = model_transform.times(Mat4.translation(0, 18, 0));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(-3.9, 0.9, 0))
       .times(Mat4.rotation(Math.PI / 2, 0, 0, 1))
       .times(Mat4.scale(1, 0.1, 1));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
     model_transform = model_transform.times(Mat4.translation(0, -78, 0));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
   }
 
   draw_boxcar(context, program_state, model_transform, t, i) {
@@ -453,9 +457,9 @@ export class Project extends Scene {
     this.draw_rail(context, program_state, model_transform, t);
   }
 
-//   drawRailroad(context, program_state, model_transform, t) {
+  //   drawRailroad(context, program_state, model_transform, t) {
 
-//   }
+  //   }
 
   draw_ground(context, program_state, model_transform, t) {
     model_transform = model_transform
@@ -497,11 +501,10 @@ export class Project extends Scene {
     // this.draw_box(context, program_state, model_transform, t);
     // this.draw_wheel(context, program_state, model_transform, t);
     // this.draw_boxcar(context, program_state, model_transform, t);
-    
-	
-	//this.draw_train(context, program_state, model_transform, t);
-	//this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
-	this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
+
+    //this.draw_train(context, program_state, model_transform, t);
+    //this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
+    this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
 
     // this.draw_railroad(context, program_state, model_transform, t);
 
