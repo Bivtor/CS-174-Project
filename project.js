@@ -176,6 +176,7 @@ export class Project extends Scene {
     this.new_line();
     this.key_triggered_button("Train View", ["Control", "1"], () => (this.attached = () => this.train_pov));
     this.key_triggered_button("Train POV", ["Control", "2"], () => (this.attached = () => this.train_pov_engine));
+    this.key_triggered_button("Cinematic POV", ["Control", "c"], () => (this.attached = () => this.cinematicCamera));
     this.new_line();
     this.key_triggered_button("Zoom In", ["Control", "3"], () => {
       this.fov += 2;
@@ -191,9 +192,18 @@ export class Project extends Scene {
     // });
   }
 
+  draw_cinematic_cam(context, program_state, model_transform, t) {
+    model_transform = model_transform
+      .times(Mat4.translation(100, 140, 200))
+      .times(Mat4.rotation(-Math.PI / 5, 1, 0, 0))
+      .times(Mat4.rotation(Math.PI / 8, 0, 1, 0))
+      .times(Mat4.translation(-t, 0, 0));
+
+    this.cinematicCamera = model_transform;
+  }
   draw_cactus_big(context, program_state, model_transform, t, r) {
     let base = model_transform;
-	model_transform = model_transform.times(Mat4.rotation((r+25)/5, 0, 1, 0));
+    model_transform = model_transform.times(Mat4.rotation((r + 25) / 5, 0, 1, 0));
     model_transform = model_transform
       .times(Mat4.translation(0, 10, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
@@ -202,7 +212,7 @@ export class Project extends Scene {
     //draw trunk
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.cactus);
     let base2 = base;
-	base = base.times(Mat4.rotation((r+25)/5, 0, 1, 0));
+    base = base.times(Mat4.rotation((r + 25) / 5, 0, 1, 0));
     base = base
       .times(Mat4.rotation(Math.PI / 4, 0, 1, 0))
       .times(Mat4.translation(2, -3, 0))
@@ -213,7 +223,7 @@ export class Project extends Scene {
     base = base.times(Mat4.translation(0.8, 1, 0)).times(Mat4.scale(0.2, 2, 1));
     this.shapes.box.draw(context, program_state, base, this.materials.cactus);
 
-	base2 = base2.times(Mat4.rotation((r+25)/5, 0, 1, 0));
+    base2 = base2.times(Mat4.rotation((r + 25) / 5, 0, 1, 0));
     base2 = base2
       .times(Mat4.rotation(Math.PI / 4, 0, 1, 0))
       .times(Mat4.translation(-2, -3, 0))
@@ -518,7 +528,7 @@ export class Project extends Scene {
     for (let i = 1; i < this.randomList.length - 2; i += 2) {
       model_transform = base;
       model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 30)));
-      if ((i-1) % 4 == 0) {
+      if ((i - 1) % 4 == 0) {
         this.draw_tree_small(context, program_state, model_transform, t, this.randomList[i]);
       } else {
         this.draw_tree_big(context, program_state, model_transform, t, this.randomList[i]);
@@ -564,7 +574,7 @@ export class Project extends Scene {
     for (let i = 1; i < this.randomList.length / 3 - 2; i += 2) {
       model_transform = base;
       model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 30)));
-      if ((i-1) % 4 == 0) {
+      if ((i - 1) % 4 == 0) {
         this.draw_cactus_small(context, program_state, model_transform, t, this.randomList[i]);
       } else {
         this.draw_cactus_big(context, program_state, model_transform, t, this.randomList[i]);
@@ -649,23 +659,27 @@ export class Project extends Scene {
 
     // this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
     this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
+
     // model_transform = model_transform.times(Mat4.translation(3, 0, 0));
 
     this.draw_sun(context, program_state, model_transform, t);
+
+    this.draw_cinematic_cam(context, program_state, model_transform, t);
+
     // if (this.terrain == "mountain") {
-	  model_transform = model_transform.times(Mat4.translation(0, -0.2, 0));
-      this.draw_ground(context, program_state, model_transform, t);
-      this.draw_mountain_range(context, program_state, model_transform, t);
-      this.draw_trees(context, program_state, model_transform, t);
+    model_transform = model_transform.times(Mat4.translation(0, -0.2, 0));
+    this.draw_ground(context, program_state, model_transform, t);
+    this.draw_mountain_range(context, program_state, model_transform, t);
+    this.draw_trees(context, program_state, model_transform, t);
     // } else {
-	  model_transform = base;
-	  model_transform = model_transform.times(Mat4.translation(-1100, 0.2, 0));
-      this.draw_ground_desert(context, program_state, model_transform, t);
-	  model_transform = base;
-	  model_transform = model_transform.times(Mat4.translation(-270, 0, 0));
-      this.draw_desert(context, program_state, model_transform, t);
+    model_transform = base;
+    model_transform = model_transform.times(Mat4.translation(-1100, 0.2, 0));
+    this.draw_ground_desert(context, program_state, model_transform, t);
+    model_transform = base;
+    model_transform = model_transform.times(Mat4.translation(-270, 0, 0));
+    this.draw_desert(context, program_state, model_transform, t);
     // }
-	model_transform = model_transform.times(Mat4.translation(30, 0, 0));
+    model_transform = model_transform.times(Mat4.translation(30, 0, 0));
     this.draw_clouds(context, program_state, model_transform, t);
 
     //model_transform = model_transform.times(Mat4.translation(-10, 0, -5));
