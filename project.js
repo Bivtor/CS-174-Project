@@ -315,24 +315,6 @@ export class Project extends Scene {
       model_transform = model_transform.times(Mat4.translation(0, 3, 0));
     }
   }
-  draw_smokestack(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.translation(0, 4, 0));
-    model_transform = model_transform.times(Mat4.scale(0.8, 0.8, 0.8));
-
-    const smoke_shape_arr = new Map([
-      [0, this.shapes.sphere_low_poly],
-      [1, this.shapes.sphere_low_poly2],
-      [2, this.shapes.sphere_low_poly2],
-      [3, this.shapes.sphere_low_poly3],
-      [4, this.shapes.sphere_low_poly4],
-    ]);
-
-    for (let i = 0; i < 5; i++) {
-      smoke_shape_arr.get(i).draw(context, program_state, model_transform, this.materials.dark_white);
-      model_transform = model_transform.times(Mat4.scale(1.15, 1.15, 1.15));
-      model_transform = model_transform.times(Mat4.translation(0, 3, 0));
-    }
-  }
 
   draw_cloud(context, program_state, model_transform, t, j) {
     let modulation = Math.cos((Math.PI / 10) * t) / +2;
