@@ -11,6 +11,8 @@ export class Project extends Scene {
     super();
     let polyres = 24; // how detailed shapes are
     // At the beginning of our program, load one of each of these shape definitions onto the GPU.
+    this.terrain = "mountain";
+
     this.shapes = {
       axis: new defs.Axis_Arrows(),
       box: new defs.Cube(),
@@ -39,8 +41,8 @@ export class Project extends Scene {
       }),
       cactus: new Material(new Texture_Rotate(), {
         ambient: 1,
-        diffusivity: 0.,
-        specularity: 1.,
+        diffusivity: 0,
+        specularity: 1,
         texture: new Texture("assets/cactus.png"),
       }),
       pink: new Material(new defs.Phong_Shader(), {
@@ -137,7 +139,7 @@ export class Project extends Scene {
       this.noisySineList.push(randomInt);
     }
     this.speed = 3;
-	this.fov = 4;
+    this.fov = 4;
   }
 
   generateNoisySineWave(frequency, amplitude, noiseFactor) {
@@ -168,15 +170,19 @@ export class Project extends Scene {
     });
     this.new_line();
     this.key_triggered_button("Train View", ["Control", "1"], () => (this.attached = () => this.train_pov));
-	this.new_line();
+    this.new_line();
     this.key_triggered_button("Zoom In", ["Control", "2"], () => {
-		this.fov += 2;
-	});
-	this.key_triggered_button("Zoom Out", ["Control", "3"], () => {
-		if(this.fov > 2) {
-			this.fov -= 2;
-		}
-	});
+      this.fov += 2;
+    });
+    this.key_triggered_button("Zoom Out", ["Control", "3"], () => {
+      if (this.fov > 2) {
+        this.fov -= 2;
+      }
+    });
+    this.new_line();
+    this.key_triggered_button("Change Terrain", ["Control", "4"], () => {
+      this.terrain = this.terrain == "mountain" ? "desert" : "mountain";
+    });
   }
 
   draw_cactus_big(context, program_state, model_transform, t) {
@@ -188,7 +194,7 @@ export class Project extends Scene {
     model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.25, 0.25, 1));
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.cactus);
     base = base.times(Mat4.rotation(-Math.PI / 2, 1, 0, 0));
-    this.shapes.box.draw(context, program_state, base, this.materials.cactus);
+    // this.shapes.box.draw(context, program_state, base, this.materials.cactus);
   }
 
   draw_cactus_small(context, program_state, model_transform, t) {
@@ -441,11 +447,11 @@ export class Project extends Scene {
   }
 
   modulate_color_trees(t, rng) {
-	let modulation = Math.sin(2 * Math.PI/150 * t + 11 + rng);
-	let r = (1 - modulation) * 0.780 + modulation * 0.88; 
-	let g = (1 - modulation) * 0.845 + modulation * 0.88; 
-	let b = (1 - modulation) * 0.780 + modulation * 0.88; 
-	return color(r, g, b, 1);
+    let modulation = Math.sin(((2 * Math.PI) / 150) * t + 11 + rng);
+    let r = (1 - modulation) * 0.78 + modulation * 0.88;
+    let g = (1 - modulation) * 0.845 + modulation * 0.88;
+    let b = (1 - modulation) * 0.78 + modulation * 0.88;
+    return color(r, g, b, 1);
   }
 
   draw_tree_big(context, program_state, model_transform, t, rng) {
@@ -453,7 +459,7 @@ export class Project extends Scene {
       .times(Mat4.translation(0, -0.5, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(3, 3, 3));
-    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green.override({color: this.modulate_color_trees(t, rng)}));
+    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green.override({ color: this.modulate_color_trees(t, rng) }));
     model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.25, 0.25, 1));
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.brown);
   }
@@ -463,7 +469,7 @@ export class Project extends Scene {
       .times(Mat4.translation(0, -3, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(1.5, 1.5, 1.5));
-    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green.override({color: this.modulate_color_trees(t, rng)}));
+    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green.override({ color: this.modulate_color_trees(t, rng) }));
     model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.15, 0.15, 1));
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.brown);
   }
@@ -514,12 +520,34 @@ export class Project extends Scene {
     }
   }
 
+  draw_desert(context, program_state, model_transform, t) {
+    let base = model_transform;
+    for (let i = 0; i < this.randomList.length - 2; i += 2) {
+      model_transform = base;
+      model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 30)));
+      if (i % 4 == 0) {
+        this.draw_cactus_small(context, program_state, model_transform, t, this.randomList[i]);
+      } else {
+        this.draw_cactus_big(context, program_state, model_transform, t, this.randomList[i]);
+      }
+    }
+    for (let i = 1; i < this.randomList.length - 2; i += 2) {
+      model_transform = base;
+      model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 30)));
+      if (i % 4 == 0) {
+        this.draw_cactus_small(context, program_state, model_transform, t, this.randomList[i]);
+      } else {
+        this.draw_cactus_big(context, program_state, model_transform, t, this.randomList[i]);
+      }
+    }
+  }
+
   modulate_color_ground(t) {
-	let modulation = Math.sin(2 * Math.PI/150 * t + 11);
-	let r = (1 - modulation) * 0.790 + modulation * 0.88; 
-	let g = (1 - modulation) * 0.845 + modulation * 0.88; 
-	let b = (1 - modulation) * 0.680 + modulation * 0.88; 
-	return color(r, g, b, 1);
+    let modulation = Math.sin(((2 * Math.PI) / 150) * t + 11);
+    let r = (1 - modulation) * 0.79 + modulation * 0.88;
+    let g = (1 - modulation) * 0.845 + modulation * 0.88;
+    let b = (1 - modulation) * 0.68 + modulation * 0.88;
+    return color(r, g, b, 1);
   }
 
   draw_ground(context, program_state, model_transform, t) {
@@ -527,14 +555,14 @@ export class Project extends Scene {
       .times(Mat4.translation(0, -5, 0))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(1000, 1000, 1000));
-    this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand.override({color: this.modulate_color_ground(t)}));
+    this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand.override({ color: this.modulate_color_ground(t) }));
   }
 
   draw_ground_desert(context, program_state, model_transform, t) {
     model_transform = model_transform
       .times(Mat4.translation(0, -5, 0))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
-	  .times(Mat4.rotation(1, 0, 0, 1))
+      .times(Mat4.rotation(1, 0, 0, 1))
       .times(Mat4.scale(1000, 1000, 1000));
     this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand);
   }
@@ -556,7 +584,7 @@ export class Project extends Scene {
       program_state.set_camera(state);
     }
 
-	// higher = narrower
+    // higher = narrower
     program_state.projection_transform = Mat4.perspective(Math.PI / this.fov, context.width / context.height, 0.1, 1000);
 
     const t = (this.speed * program_state.animation_time) / 1000,
@@ -569,14 +597,12 @@ export class Project extends Scene {
 
     this.move = false;
 
-	let base = model_transform;
+    let base = model_transform;
 
     // ground
-    this.draw_ground(context, program_state, model_transform, t);
-	model_transform = model_transform.times(Mat4.translation(-1100, 0.1, 0));
-	this.draw_ground_desert(context, program_state, model_transform, t);
+    // model_transform = model_transform.times(Mat4.translation(-1100, 0.1, 0));
 
-	model_transform = base;
+    model_transform = base;
     // objects
     // this.draw_box(context, program_state, model_transform, t);
     // this.draw_wheel(context, program_state, model_transform, t);
@@ -585,14 +611,18 @@ export class Project extends Scene {
     //this.draw_train(context, program_state, model_transform, t);
     // this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
     this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
-    this.draw_cactus_big(context, program_state, model_transform, t);
-	model_transform = model_transform.times(Mat4.translation(3, 0, 0));
-    this.draw_cactus_small(context, program_state, model_transform, t);
+    model_transform = model_transform.times(Mat4.translation(3, 0, 0));
 
     // this.draw_railroad(context, program_state, model_transform, t);
 
-    this.draw_trees(context, program_state, model_transform, t);
-    this.draw_mountain_range(context, program_state, model_transform, t);
+    if (this.terrain == "mountain") {
+      this.draw_ground(context, program_state, model_transform, t);
+      this.draw_mountain_range(context, program_state, model_transform, t);
+      this.draw_trees(context, program_state, model_transform, t);
+    } else {
+      this.draw_ground_desert(context, program_state, model_transform, t);
+      this.draw_desert(context, program_state, model_transform, t);
+    }
 
     this.draw_clouds(context, program_state, model_transform, t);
 
