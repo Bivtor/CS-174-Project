@@ -153,11 +153,11 @@ export class Project extends Scene {
   make_control_panel() {
     // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
     this.key_triggered_button("Increase Train Speed", ["t"], () => {
-      this.speed += 0.1;
+      this.speed += 0.01;
     });
     this.new_line();
     this.key_triggered_button("Decrease Train Speed", ["g"], () => {
-      this.speed = this.speed > 1 ? this.speed - 0.1 : this.speed;
+      this.speed = this.speed > 1 ? this.speed - 0.01 : this.speed;
     });
   }
 
@@ -400,22 +400,30 @@ export class Project extends Scene {
     }
   }
 
-  draw_tree_big(context, program_state, model_transform, t) {
+  modulate_color_trees(t, rng) {
+	let modulation = Math.sin(2 * Math.PI/150 * t + 11 + rng);
+	let r = (1 - modulation) * 0.780 + modulation * 0.88; 
+	let g = (1 - modulation) * 0.845 + modulation * 0.88; 
+	let b = (1 - modulation) * 0.780 + modulation * 0.88; 
+	return color(r, g, b, 1);
+  }
+
+  draw_tree_big(context, program_state, model_transform, t, rng) {
     model_transform = model_transform
       .times(Mat4.translation(0, -0.5, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(3, 3, 3));
-    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green);
+    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green.override({color: this.modulate_color_trees(t, rng)}));
     model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.25, 0.25, 1));
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.brown);
   }
 
-  draw_tree_small(context, program_state, model_transform, t) {
+  draw_tree_small(context, program_state, model_transform, t, rng) {
     model_transform = model_transform
       .times(Mat4.translation(0, -3, 0))
       .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(1.5, 1.5, 1.5));
-    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green);
+    this.shapes.leaves.draw(context, program_state, model_transform, this.materials.green.override({color: this.modulate_color_trees(t, rng)}));
     model_transform = model_transform.times(Mat4.translation(0, 0, -1.5)).times(Mat4.scale(0.15, 0.15, 1));
     this.shapes.trunk.draw(context, program_state, model_transform, this.materials.brown);
   }
@@ -426,18 +434,18 @@ export class Project extends Scene {
       model_transform = base;
       model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 30)));
       if (i % 4 == 0) {
-        this.draw_tree_small(context, program_state, model_transform, t);
+        this.draw_tree_small(context, program_state, model_transform, t, this.randomList[i]);
       } else {
-        this.draw_tree_big(context, program_state, model_transform, t);
+        this.draw_tree_big(context, program_state, model_transform, t, this.randomList[i]);
       }
     }
     for (let i = 1; i < this.randomList.length - 2; i += 2) {
       model_transform = base;
       model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 30)));
       if (i % 4 == 0) {
-        this.draw_tree_small(context, program_state, model_transform, t);
+        this.draw_tree_small(context, program_state, model_transform, t, this.randomList[i]);
       } else {
-        this.draw_tree_big(context, program_state, model_transform, t);
+        this.draw_tree_big(context, program_state, model_transform, t, this.randomList[i]);
       }
     }
   }
@@ -466,12 +474,20 @@ export class Project extends Scene {
     }
   }
 
+  modulate_color_ground(t) {
+	let modulation = Math.sin(2 * Math.PI/150 * t + 11);
+	let r = (1 - modulation) * 0.790 + modulation * 0.88; 
+	let g = (1 - modulation) * 0.845 + modulation * 0.88; 
+	let b = (1 - modulation) * 0.680 + modulation * 0.88; 
+	return color(r, g, b, 1);
+  }
+
   draw_ground(context, program_state, model_transform, t) {
     model_transform = model_transform
       .times(Mat4.translation(0, -5, 0))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(1000, 1000, 1000));
-    this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand);
+    this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand.override({color: this.modulate_color_ground(t)}));
   }
 
   display(context, program_state) {
