@@ -1,7 +1,9 @@
 import { defs, tiny } from "./examples/common.js";
 import { Canvas_Widget } from "./main-scene.js";
 
-const { Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene } = tiny;
+const { Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture } = tiny;
+
+const { Cube, Axis_Arrows, Textured_Phong } = defs;
 
 export class Project extends Scene {
   constructor() {
@@ -28,10 +30,37 @@ export class Project extends Scene {
 
     // *** Materials
     this.materials = {
+      texture_box1: new Material(new Texture_Rotate(), {
+        color: hex_color("#000000"),
+        ambient: 1,
+        diffusivity: 0.1,
+        specularity: 0.1,
+        texture: new Texture("assets/shipping.jpeg", "NEAREST"),
+      }),
       pink: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
         diffusivity: 0.5,
         color: hex_color("#f7cac9"),
+      }),
+      trainblue: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#6C698D"),
+      }),
+      darkgrey: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#29282A"),
+      }),
+      red: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#3E3D52"),
+      }),
+      wheelbrown: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#826D5E"),
       }),
       black: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
@@ -58,10 +87,25 @@ export class Project extends Scene {
         diffusivity: 0.5,
         color: hex_color("#7b5c43"),
       }),
+	  tan: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#8C8AA8"),
+      }),
       white: new Material(new defs.Phong_Shader(), {
         ambient: 1.0,
         diffusivity: 0.5,
         color: hex_color("#ffffff"),
+      }),
+	  stone: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#636266"),
+      }),
+	  rock: new Material(new defs.Phong_Shader(), {
+        ambient: 1.0,
+        diffusivity: 0.5,
+        color: hex_color("#444346"),
       }),
       dark_white: new Material(new defs.Phong_Shader(), {
         ambient: 0.9,
@@ -109,51 +153,43 @@ export class Project extends Scene {
   make_control_panel() {
     // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
     this.key_triggered_button("Increase Train Speed", ["t"], () => {
-      this.speed += 1;
-      this.trainspeed = this.trainspeed + 1;
+      this.speed += 0.1;
     });
     this.new_line();
     this.key_triggered_button("Decrease Train Speed", ["g"], () => {
-      this.speed = this.speed > 1 ? this.speed - 1 : this.speed;
+      this.speed = this.speed > 1 ? this.speed - 0.1 : this.speed;
     });
-    // this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
-    // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
-    // this.new_line();
-    // this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
-    // this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
-    // this.new_line();
-    // this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
   }
 
   draw_wheel(context, program_state, model_transform, t) {
     model_transform = model_transform.times(Mat4.scale(0.5, 0.5, 0.25)).times(Mat4.rotation(-t / 1.5, 0, 0, 1));
-    this.shapes.wheel.draw(context, program_state, model_transform, this.materials.pink);
-    this.shapes.disc.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.wheel.draw(context, program_state, model_transform, this.materials.stone);
+    this.shapes.disc.draw(context, program_state, model_transform, this.materials.rock);
     let base = model_transform;
     model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.stone);
     model_transform = base;
     model_transform = model_transform.times(Mat4.rotation(Math.PI / 2, 0, 0, 1));
     model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.stone);
     model_transform = base;
     model_transform = model_transform.times(Mat4.rotation(Math.PI / 4, 0, 0, 1));
     model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.stone);
     model_transform = base;
     model_transform = model_transform.times(Mat4.rotation(Math.PI / 2, 0, 0, 1));
     model_transform = model_transform.times(Mat4.scale(0.05, 0.98, 0.25));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.stone);
   }
 
   draw_box(context, program_state, model_transform, t) {
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.trainblue);
   }
 
   draw_wheel_base(context, program_state, model_transform, t, spacing = 1.5) {
     let base = model_transform;
     model_transform = model_transform.times(Mat4.translation(spacing / 2, -1.25, 0)).times(Mat4.scale(1, 0.35, 0.75));
-    this.draw_box(context, program_state, model_transform, t);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.darkgrey);
 
     model_transform = base;
     model_transform = model_transform.times(Mat4.translation(0, -1.5, -0.76));
@@ -169,23 +205,23 @@ export class Project extends Scene {
   draw_empty_box(context, program_state, model_transform, t) {
     let base = model_transform;
     model_transform = model_transform.times(Mat4.scale(4, 0.1, 1));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.tan);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(0, 0.9, -0.9))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(4, 0.1, 1));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.tan);
     model_transform = model_transform.times(Mat4.translation(0, 18, 0));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.tan);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(-3.9, 0.9, 0))
       .times(Mat4.rotation(Math.PI / 2, 0, 0, 1))
       .times(Mat4.scale(1, 0.1, 1));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.tan);
     model_transform = model_transform.times(Mat4.translation(0, -78, 0));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.tan);
   }
 
   draw_boxcar(context, program_state, model_transform, t, i) {
@@ -229,7 +265,8 @@ export class Project extends Scene {
     model_transform = base;
     // links
     model_transform = model_transform.times(Mat4.translation(2.75, -1.25, 0)).times(Mat4.scale(2.75, 0.1, 0.25));
-    this.draw_box(context, program_state, model_transform, t);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.darkgrey);
+
     // wheels
     model_transform = base;
     model_transform = model_transform.times(Mat4.translation(2, 0, 0));
@@ -240,24 +277,27 @@ export class Project extends Scene {
     base = base.times(Mat4.translation(-0.5, 0, 0));
     model_transform = base;
     model_transform = model_transform.times(Mat4.translation(0, 0.25, 0)).times(Mat4.scale(1, 1.2, 1));
-    this.draw_box(context, program_state, model_transform, t);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.red);
     model_transform = base;
     model_transform = model_transform.times(Mat4.translation(-2, -1, 0)).times(Mat4.scale(3.5, 0.2, 1));
-    this.draw_box(context, program_state, model_transform, t);
+    this.shapes.box.draw(context, program_state, model_transform, this.materials.red);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(-2, 0, 0))
       .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
       .times(Mat4.scale(1, 1, 5.5));
-    this.shapes.engine.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.engine.draw(context, program_state, model_transform, this.materials.tan);
     model_transform = model_transform.times(Mat4.translation(0, 0, -0.5));
-    this.shapes.disc_low_poly.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.disc_low_poly.draw(context, program_state, model_transform, this.materials.tan);
     model_transform = base;
     model_transform = model_transform
       .times(Mat4.translation(-4, 1, 0))
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(0.25, 0.25, 1));
-    this.shapes.wheel.draw(context, program_state, model_transform, this.materials.pink);
+    this.shapes.wheel.draw(context, program_state, model_transform, this.materials.red);
+	model_transform = base;
+	model_transform = model_transform.times(Mat4.translation(-4, 2.25, 0));
+	this.draw_smokestack(context, program_state, model_transform, t);
     model_transform = base;
     model_transform = model_transform.times(Mat4.translation(0, 1.5, 0)).times(Mat4.scale(1.2, 0.1, 1.1));
     this.draw_box(context, program_state, model_transform, t);
@@ -297,22 +337,43 @@ export class Project extends Scene {
       }
     }
   }
+  
   draw_smokestack(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.translation(0, 4, 0));
-    model_transform = model_transform.times(Mat4.scale(0.8, 0.8, 0.8));
+	let modulation = 0.1 * Math.cos((Math.PI/5) * t) / + 2;
+
+    model_transform = model_transform.times(Mat4.translation(0, modulation*4, 0));
+    model_transform = model_transform.times(Mat4.scale(0.5, 0.5, 0.5));
 
     const smoke_shape_arr = new Map([
       [0, this.shapes.sphere_low_poly],
       [1, this.shapes.sphere_low_poly2],
       [2, this.shapes.sphere_low_poly2],
-      [3, this.shapes.sphere_low_poly3],
-      [4, this.shapes.sphere_low_poly4],
+      [3, this.shapes.sphere_low_poly],
+      [4, this.shapes.sphere_low_poly2],
     ]);
 
     for (let i = 0; i < 5; i++) {
       smoke_shape_arr.get(i).draw(context, program_state, model_transform, this.materials.dark_white);
       model_transform = model_transform.times(Mat4.scale(1.15, 1.15, 1.15));
-      model_transform = model_transform.times(Mat4.translation(0, 3, 0));
+      model_transform = model_transform.times(Mat4.translation(i**2/9, 0.6, 0));
+    }
+  }
+
+  drawTrain(context, program_state, model_transform, amplitude, frequency, phase, t) {
+    model_transform = model_transform.times(Mat4.translation(t, -3, 0));
+    let n = 6;
+    for (let i = 0; i < n; i++) {
+      const x = i * 8.1;
+      const [x_pos, z_pos] = this.generateSinusoidalPath(x, amplitude, frequency, phase, t);
+      const tangent_angle = this.calculateTangentAngle(x, amplitude, frequency, phase, t);
+      const model_transform_with_position = model_transform.times(Mat4.translation(x_pos, 0, z_pos));
+      const model_transform_with_orientation = model_transform_with_position.times(Mat4.rotation(-tangent_angle, 0, 1, 0));
+
+      if (i == 0) {
+        this.draw_locomotive(context, program_state, model_transform_with_orientation, t);
+      } else {
+        this.draw_boxcar(context, program_state, model_transform_with_orientation, t, i);
+      }
     }
   }
 
@@ -372,7 +433,7 @@ export class Project extends Scene {
     let base = model_transform;
     for (let i = 0; i < this.randomList.length - 2; i += 2) {
       model_transform = base;
-      model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 29)));
+      model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 30)));
       if (i % 4 == 0) {
         this.draw_tree_small(context, program_state, model_transform, t);
       } else {
@@ -381,7 +442,7 @@ export class Project extends Scene {
     }
     for (let i = 1; i < this.randomList.length - 2; i += 2) {
       model_transform = base;
-      model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 29)));
+      model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 30)));
       if (i % 4 == 0) {
         this.draw_tree_small(context, program_state, model_transform, t);
       } else {
@@ -404,53 +465,15 @@ export class Project extends Scene {
     let base = model_transform;
     for (let i = 0; i < this.randomList.length - 100; i += 50) {
       model_transform = base;
-      model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 40)));
+      model_transform = model_transform.times(Mat4.translation(5 * this.randomList[i], 0, 2 * (this.randomList[i + 1] - 45)));
       this.draw_mountain(context, program_state, model_transform, t, this.randomList[i]);
     }
     for (let i = 1; i < this.randomList.length - 100; i += 50) {
       model_transform = base;
-      model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 40)));
+      model_transform = model_transform.times(Mat4.translation(-5 * this.randomList[i], 0, -2 * (this.randomList[i + 1] - 45)));
       this.draw_mountain(context, program_state, model_transform, t, this.randomList[i]);
     }
   }
-  //TODO Rails
-  draw_rail(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.rotation(Math.PI / 2, 1, 0, 0)).times(Mat4.scale(150, 150, 150));
-
-    this.shapes.circleoutline.draw(context, program_state, model_transform, this.materials.purple);
-  }
-
-  draw_rail_tie(context, program_state, model_transform, t) {
-    model_transform = model_transform.times(Mat4.scale(0.05, 0.08, 0.5));
-    this.shapes.box.draw(context, program_state, model_transform, this.materials.brown);
-  }
-  draw_rail_ties(context, program_state, model_transform, t) {
-    //Move to correct location
-    model_transform = model_transform.times(Mat4.translation(0, 0, -10));
-    for (var i = 0; i < 100; i += 10) {
-      model_transform = model_transform
-        // .times(Mat4.rotation(i, 0, 1, 0))
-        .times(Mat4.translation(-1, 0, -1));
-      this.draw_rail_tie(context, program_state, model_transform, t);
-    }
-  }
-
-  draw_railroad(context, program_state, model_transform, t) {
-    //Touch the ground
-    model_transform = model_transform.times(Mat4.translation(0, -5, 0));
-
-    //Draw railroad crossties
-    this.draw_rail_ties(context, program_state, model_transform, t);
-
-    //Draw rails
-    this.draw_rail(context, program_state, model_transform, t);
-    model_transform = model_transform.times(Mat4.scale(1.02, 1, 1.02));
-    this.draw_rail(context, program_state, model_transform, t);
-  }
-
-  //   drawRailroad(context, program_state, model_transform, t) {
-
-  //   }
 
   draw_ground(context, program_state, model_transform, t) {
     model_transform = model_transform
@@ -458,10 +481,6 @@ export class Project extends Scene {
       .times(Mat4.rotation(Math.PI / 2, 1, 0, 0))
       .times(Mat4.scale(1000, 1000, 1000));
     this.shapes.plane.draw(context, program_state, model_transform, this.materials.sand);
-  }
-
-  get_train_speed(t) {
-    return this.trainspeed > 1 ? this.trainspeed : 1;
   }
 
   display(context, program_state) {
@@ -731,6 +750,42 @@ class Ring_Shader extends Shader {
           float scalar = sin(19.0 * distance(point_position.xyz, center.xyz));
           gl_FragColor = scalar * vec4(0.69, 0.5, 0.25, 1);
         }`
+    );
+  }
+}
+
+class Texture_Rotate extends Textured_Phong {
+  fragment_glsl_code() {
+    return (
+      this.shared_glsl_code() +
+      `
+            varying vec2 f_tex_coord;
+            uniform sampler2D texture;
+            uniform float animation_time;
+            void main(){
+                // Sample the texture image in the correct place:
+                float r = 0.25 * 2.0 * 3.14159 * mod(animation_time, 20.0);
+                mat4 m = mat4(cos(r), -sin(r), 0.0, 0.0, sin(r), cos(r), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+                vec4 v = m * (vec4(f_tex_coord, 0.0, 0.0) + vec4(-0.5, -0.5, 0.0, 0.0)) + vec4(0.5, 0.5, 0.0, 0.0);
+                
+                vec4 tex_color = texture2D( texture, v.xy );
+
+                float x = mod(v.x, 1.0), y = mod(v.y, 1.0);
+                if (x > 0.75 && x < 0.85 && y > 0.15 && y < 0.85)
+                    tex_color = vec4(0, 0, 0, 1);
+                if (x > 0.15 && x < 0.25 && y > 0.15 && y < 0.85)
+                    tex_color = vec4(0, 0, 0, 1);
+                if (x > 0.15 && x < 0.85 && y > 0.15 && y < 0.25)
+                    tex_color = vec4(0, 0, 0, 1);
+                if (x > 0.15 && x < 0.85 && y > 0.75 && y < 0.85)
+                    tex_color = vec4(0, 0, 0, 1);
+
+                if( tex_color.w < .01 ) discard;
+                                                                         // Compute an initial (ambient) color:
+                gl_FragColor = vec4( ( tex_color.xyz + shape_color.xyz ) * ambient, shape_color.w * tex_color.w ); 
+                                                                         // Compute the final color with contributions from lights:
+                gl_FragColor.xyz += phong_model_lights( normalize( N ), vertex_worldspace );
+        } `
     );
   }
 }
