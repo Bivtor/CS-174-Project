@@ -437,6 +437,10 @@ export class Project extends Scene {
     this.draw_rail(context, program_state, model_transform, t);
   }
 
+//   drawRailroad(context, program_state, model_transform, t) {
+
+//   }
+
   draw_ground(context, program_state, model_transform, t) {
     model_transform = model_transform
       .times(Mat4.translation(0, -5, 0))
@@ -482,7 +486,7 @@ export class Project extends Scene {
 	
 	//this.draw_train(context, program_state, model_transform, t);
 	//this.drawCubeTrain(context, program_state, model_transform, 5, 0.1, 0, t);
-	this.drawTrain(context, program_state, model_transform, 5, 0.1, 0, -t);
+	this.drawTrain(context, program_state, model_transform, 4.5, 0.1, 0, -t);
 
 	// this.draw_railroad(context, program_state, model_transform, t);
 
